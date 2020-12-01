@@ -17,6 +17,7 @@ const ZH_DICT = {
     HINT_CHKING: '正在切出新分支...',
     HINT_CHKEND: '分支切出完成, 开始设置 upstream 并做初始化推送...',
     HINT_ALLEND: '🍻全部完成！',
+    HINT_SAMEBR: '切出前后分支相同，您本次操作将不会产生效果...'
 }
 
 const EN_DICT = {
@@ -36,6 +37,7 @@ const EN_DICT = {
     HINT_CHKING: 'Checking out new branch...',
     HINT_CHKEND: 'Branch checkout completed, setting up upstream with initial push...',
     HINT_ALLEND: '🍻All done！',
+    HINT_SAMEBR: 'Same branch before and after checkout, it won\'t take any effects...'
 }
 
 
