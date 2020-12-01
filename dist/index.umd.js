@@ -36,7 +36,7 @@ require("core-js/modules/es.string.trim");
 
   const getCurrentBranch = () => {
     const branch = Shell.exec('git symbolic-ref --short -q HEAD');
-    return branch;
+    return branch.stdout.trim();
   };
   /** 获取当前分支名称 */
 
@@ -215,57 +215,9 @@ require("core-js/modules/es.string.trim");
     }]);
   };
 
-  const Chalk = require('chalk');
-
-  const Shell$1 = require('shelljs');
-
-  const modifyBranch = (branchConfig, config) => {
-    if (!branchConfig.type || !branchConfig.desc) {
-      console.log(Chalk.red(D.HINT_NODESC));
-      throw new Error(D.HINT_NODESC);
-    }
-    /** check if optional config has all satisfied */
-
-
-    let satisfied = true;
-    config.forEach(option => {
-      if (!branchConfig[option.name] && !option.optional) {
-        satisfied = false;
-        console.log(Chalk.red(`${D.HINT_MUSTOP.replace('__MUST_OP__', option.name)}`));
-      }
-    });
-
-    if (!satisfied) {
-      console.log(Chalk.red(D.HINT_MUSTDS));
-      throw new Error(D.HINT_MUSTDS);
-    }
-    /** Start build Branch and perform checkout */
-
-
-    const targetBranch = config.map(option => {
-      var _branchConfig$option$;
-
-      return (_branchConfig$option$ = branchConfig[option.name]) !== null && _branchConfig$option$ !== void 0 ? _branchConfig$option$ : '';
-    }).filter(Boolean).join('/');
-    /** performCheckout */
-
-    console.log();
-    console.log();
-    console.log(Chalk.green(D.HINT_PRECKO.replace('__TGT_BR__', targetBranch)));
-    console.log(Chalk.white(D.HINT_STSING));
-    /** Stash changes */
-
-    Shell$1.exec('git stash');
-    console.log(Chalk.white(D.HINT_CHKING));
-    Shell$1.exec(`git checkout -b ${targetBranch} -f`);
-    console.log(Chalk.green(D.HINT_CHKEND));
-    Shell$1.exec(`git push --set-upstream origin ${targetBranch} --no-verify`);
-    console.log(Chalk.green());
-  };
-
   const inquirer = require('inquirer');
 
-  const Chalk$1 = require('chalk');
+  const Chalk = require('chalk');
 
   const CONFIRM_QUESTIONS = [{
     type: 'input',
@@ -277,7 +229,32 @@ require("core-js/modules/es.string.trim");
   const getQuestions = (currentBranch, config) => {
     const currentQuestions = config.slice();
     return {
-      questions: currentQuestions,
+      questions: currentQuestions.map(question => {
+        const {
+          name,
+          type,
+          message,
+          options,
+          default: df
+        } = question;
+
+        if (options) {
+          return {
+            choices: options,
+            name,
+            type,
+            message,
+            default: df
+          };
+        }
+
+        return {
+          name,
+          type,
+          message,
+          default: df
+        };
+      }),
       defaults: currentQuestions.reduce((prev, curr) => {
         prev[curr.name] =
         /** Top1: 从老 Branch 来 */
@@ -293,7 +270,7 @@ require("core-js/modules/es.string.trim");
     console.log(D.ANSWER_LIST);
     Object.keys(answers).forEach(answerKey => {
       if (answers[answerKey]) {
-        console.log(Chalk$1.green(`${answerKey}: `) + Chalk$1.white(answers[answerKey]));
+        console.log(Chalk.green(`${answerKey}: `) + Chalk.white(answers[answerKey]));
       }
     });
   };
@@ -307,18 +284,20 @@ require("core-js/modules/es.string.trim");
     let answers = Object.assign({}, defaults);
 
     while (!confirmed) {
-      answers = await inquirer.prompt(questions, defaults);
+      answers = Object.assign({}, defaults, await inquirer.prompt(questions));
       console.log();
       logAnswers(answers);
-      const userConfirm = await inquirer.prompt(CONFIRM_QUESTIONS, {
-        confirm: 'Y'
-      });
+      const userConfirm = await inquirer.prompt(CONFIRM_QUESTIONS);
 
       if (userConfirm.confirm.toLowerCase() === 'y') {
         confirmed = true;
+      } else {
+        console.log();
+        console.log();
       }
     }
 
+    if (!confirmed) throw new Error();
     return answers;
   };
 
@@ -2068,16 +2047,16 @@ require("core-js/modules/es.string.trim");
   var semver_16 = semver$1.prerelease;
   var semver_23 = semver$1.gt;
 
-  const Chalk$2 = require('chalk');
+  const Chalk$1 = require('chalk');
 
-  const Shell$2 = require('shelljs');
+  const Shell$1 = require('shelljs');
 
   let npmMirror = 'http://registry.npmjs.org';
 
   const getNpmMirror = () => {
     try {
-      const mirrorResult = Shell$2.exec('npm config get registry');
-      npmMirror = mirrorResult;
+      const mirrorResult = Shell$1.exec('npm config get registry');
+      npmMirror = mirrorResult.stdout.trim();
     } catch (err) {
       npmMirror = 'http://registry.npmjs.org';
     }
@@ -2118,7 +2097,7 @@ require("core-js/modules/es.string.trim");
       if (semver_23(latestVersion, localVersion)) {
         const displayMessage = getLocalMessage(pkg.name, latestVersion, message);
         console.log();
-        console.log(Chalk$2.green(displayMessage));
+        console.log(Chalk$1.green(displayMessage));
         console.log();
         return {
           message: displayMessage,
@@ -2128,7 +2107,7 @@ require("core-js/modules/es.string.trim");
         };
       }
     } catch (err) {
-      console.log(Chalk$2.red(err.message));
+      console.log(Chalk$1.red(err.message));
       return false;
     }
   };
@@ -2160,9 +2139,8 @@ require("core-js/modules/es.string.trim");
     /** prepare questions */
 
     const result = await askQuestions(configs, branchModel);
-    /** write target branch */
-
-    return modifyBranch(result, configs);
+    console.log(result); // /** write target branch */
+    // return modifyBranch(result, configs)
   }
 
   exports.performFormat = performFormat;

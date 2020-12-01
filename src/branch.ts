@@ -18,7 +18,7 @@ const isBranchShouldParse = (branch: string, skipBranch: string[]) => {
 
 export const getCurrentBranch = () => {
     const branch = Shell.exec('git symbolic-ref --short -q HEAD')
-    return branch
+    return branch.stdout.trim()
 }
 
 /** 获取当前分支名称 */

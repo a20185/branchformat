@@ -23,7 +23,7 @@ export const modifyBranch = (branchConfig: Partial<BranchAnswers>, config: reado
     }
     /** Start build Branch and perform checkout */
     const targetBranch = config
-        .map(option => branchConfig[option.name] ?? '')
+        .map(option => `${option.prefix ?? ''}${branchConfig[option.name]}` ?? '')
         .filter(Boolean)
         .join('/')
     /** performCheckout */

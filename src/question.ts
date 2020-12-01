@@ -24,7 +24,13 @@ const CONFIRM_QUESTIONS = [
 const getQuestions = (currentBranch: BranchAnswers, config: readonly OptionItem[]) => {
     const currentQuestions = config.slice()
     return {
-        questions: currentQuestions,
+        questions: currentQuestions.map(question => {
+            const { name, type, message, options, default: df } = question as any
+            if (options) {
+                return { choices: options, name, type, message, default: df }
+            }
+            return { name, type, message, default: df }
+        }),
         defaults: currentQuestions.reduce((prev, curr) => {
             prev[curr.name] =
                 /** Top1: 从老 Branch 来 */
@@ -52,13 +58,17 @@ export const askQuestions = async (config: readonly OptionItem[], currentBranch:
     const { questions, defaults } = getQuestions(currentBranch, config)
     let answers = Object.assign({}, defaults)
     while (!confirmed) {
-        answers = await inquirer.prompt(questions, defaults)
+        answers = Object.assign({}, defaults, await inquirer.prompt(questions))
         console.log()
         logAnswers(answers)
-        const userConfirm = await inquirer.prompt(CONFIRM_QUESTIONS, { confirm: 'Y' })
+        const userConfirm = await inquirer.prompt(CONFIRM_QUESTIONS)
         if (userConfirm.confirm.toLowerCase() === 'y') {
             confirmed = true
+        } else {
+            console.log()
+            console.log()
         }
     }
+    if (!confirmed) throw new Error()
     return answers
 }
