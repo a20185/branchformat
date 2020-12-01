@@ -4,7 +4,7 @@ import { BranchAnswers } from "./question"
 const Chalk = require('chalk')
 const Shell = require('shelljs')
 
-export const modifyBranch = (branchConfig: Partial<BranchAnswers>, config: readonly OptionItem[]) => {
+export const modifyBranch = (branchConfig: Partial<BranchAnswers>, config: readonly OptionItem[], sourceBranch: string) => {
     if (!branchConfig.type || !branchConfig.desc) {
         console.log(Chalk.red(D.HINT_NODESC))
         throw new Error(D.HINT_NODESC)
@@ -26,6 +26,10 @@ export const modifyBranch = (branchConfig: Partial<BranchAnswers>, config: reado
         .map(option => `${branchConfig[option.name] ? option.prefix + branchConfig[option.name] : ''}` ?? '')
         .filter(Boolean)
         .join('/')
+    if (sourceBranch === targetBranch) {
+        console.log(Chalk.red(D.HINT_SAMEBR))
+        throw new Error(D.HINT_SAMEBR)
+    }
     /** performCheckout */
     console.log()
     console.log()

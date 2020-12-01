@@ -23,7 +23,6 @@ export async function performFormat(directoryPath: string) {
     const branchModel = parseExistedBranch(currentBranch, configs, rcConfig?.skip)
     /** prepare questions */
     const result = await askQuestions(configs, branchModel)
-    console.log(result)
     // /** write target branch */
-    return modifyBranch(result, configs)
+    return modifyBranch(result, configs, currentBranch)
 }
