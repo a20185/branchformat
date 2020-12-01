@@ -8,7 +8,7 @@ let npmMirror = 'http://registry.npmjs.org'
 const getNpmMirror = () => {
     try {
         const mirrorResult = Shell.exec('npm config get registry')
-        npmMirror = mirrorResult
+        npmMirror = mirrorResult.stdout.trim()
     } catch (err) {
         npmMirror = 'http://registry.npmjs.org'
     }
