@@ -12,6 +12,317 @@ require("core-js/modules/es.string.replace");
 
 require("core-js/modules/es.string.trim");
 
+var _process$env$LANG;
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+const Shell = require('shelljs');
+
+const defaultSkipbranch = ['master', 'staging'];
+
+const getParsingPhases = config => {
+  /** Final not use */
+  return config.slice(0, -1);
+};
+
+const isBranchShouldParse = (branch, skipBranch) => {
+  if (skipBranch.find(current => branch === current)) {
+    return false;
+  }
+
+  return true;
+};
+
+const getCurrentBranch = () => {
+  const branch = Shell.exec('git symbolic-ref --short -q HEAD');
+  return branch;
+};
+/** 获取当前分支名称 */
+
+
+const parseExistedBranch = (currentBranch, config, skipBranchs = defaultSkipbranch) => {
+  /** 使用正则匹配当前分支是否合法，以及具备什么信息 */
+  const parsingPhases = getParsingPhases(config);
+  /** 根据斜杠做切割 */
+
+  const branchSlices = currentBranch.split('/');
+  const restFeatures = [];
+  let parsingIndex = 0;
+  const parseResult = {};
+  /** Setup initial value */
+
+  config.forEach(option => {
+    parseResult[option.name] = '';
+  });
+
+  if (!isBranchShouldParse(currentBranch, skipBranchs)) {
+    return parseResult;
+  }
+  /** 从头到尾 parse */
+
+
+  while (branchSlices.length && parsingIndex < parsingPhases.length) {
+    const brResult = branchSlices.pop();
+    let matchResult = null;
+    let targetIndex = 0;
+    /** 从前往后看看那个匹配上了 */
+
+    for (let idx = parsingIndex; idx < parsingPhases.length; idx++) {
+      targetIndex = idx;
+      const parsingRegex = parsingPhases[targetIndex];
+      const matcher = brResult.match(new RegExp(parsingRegex.regExp));
+      /** 匹配上了，或者不允许跳过 */
+
+      if (matcher || !parsingRegex.optional) {
+        matchResult = matcher;
+        break;
+      }
+    }
+    /** 回退一个 */
+
+
+    if (targetIndex === parsingPhases.length) {
+      targetIndex -= 1;
+    }
+
+    if (matchResult) {
+      /** 匹配上了，记录，然后更新 */
+      parseResult[parsingPhases[targetIndex].name] = matchResult[1];
+    } else {
+      /** 说明到最后一个都匹配不上 */
+      for (let pos = parsingIndex; pos <= targetIndex; pos++) {
+        restFeatures.push(brResult);
+      }
+    }
+
+    parsingIndex = targetIndex;
+  }
+
+  parseResult.desc = restFeatures.join('');
+  return parseResult;
+};
+
+const lang = (_process$env$LANG = process.env.LANG) !== null && _process$env$LANG !== void 0 && _process$env$LANG.startsWith('zh') ? 'zh' : 'en';
+const ZH_DICT = {
+  CONFIG_DESC: '请输入需求/修复的相关描述（建议小于 30 字）：',
+  CONFIG_TYPE: '请选择分支类型（默认：feature）：',
+  CONFIG_SWIM: '请输入使用的泳道名称（例如 1787-qkgku、ouyifeng-hhhhh 等）：',
+  CONFIG_SUBP: '请输入子目录名称（例如 product-gx 等）：',
+  CONFIG_BIZK: '请输入业务变量名称（例如 AgentOrder 等）：',
+  CONFIG_REID: '请输入关联ID（例如 ones-xxx, km-xxx, tt-xxx）：',
+  ANSWER_CONF: '确认吗（Y/n）?',
+  ANSWER_LIST: '您当前填写的信息如下：',
+  HINT_NODESC: '缺少分支类型和分支描述，请重新检查！',
+  HINT_MUSTOP: '必填选项 __MUST_OP__ 未填写，请重新检查！',
+  HINT_MUSTDS: '创建的分支不合法，已退出',
+  HINT_PRECKO: '切出的目标分支为 __TGT_BR__',
+  HINT_STSING: '正在保存当前分支状态...',
+  HINT_CHKING: '正在切出新分支...',
+  HINT_CHKEND: '分支切出完成, 开始设置 upstream 并做初始化推送...',
+  HINT_ALLEND: '🍻全部完成！'
+};
+const EN_DICT = {
+  CONFIG_DESC: 'Brief descriptions (less than 30 letters) :',
+  CONFIG_TYPE: 'Select branch type (default：feature) :',
+  CONFIG_SWIM: 'Input swimlane (E.g. 1787-qkgku、ouyifeng-hhhhh) :',
+  CONFIG_SUBP: 'Input subpackage (E.g. product-gx ) :',
+  CONFIG_BIZK: 'Input businesskey (E.g. AgentOrder) :',
+  CONFIG_REID: 'Input reference ID (E.g. ones-xxx, km-xxx, tt-xxx) :',
+  ANSWER_CONF: 'Proceed (Y/n) ?',
+  ANSWER_LIST: 'Collected branch informations: ',
+  HINT_NODESC: 'Missing BranchType and BranchDescription, program exited.',
+  HINT_MUSTOP: 'Required item __MUST_OP__ is missing.',
+  HINT_MUSTDS: 'Program exited because of the created branch is invalid',
+  HINT_PRECKO: 'Branch to be checkout is __TGT_BR__',
+  HINT_STSING: 'Saving current branch state...',
+  HINT_CHKING: 'Checking out new branch...',
+  HINT_CHKEND: 'Branch checkout completed, setting up upstream with initial push...',
+  HINT_ALLEND: '🍻All done！'
+};
+const D = lang === 'zh' ? ZH_DICT : EN_DICT;
+const BRANCH_CONFIG = [{
+  name: 'type',
+  type: 'list',
+  optional: false,
+  default: 'feature',
+  message: D.CONFIG_TYPE,
+  prefix: '',
+  options: ['feature', 'bugfix', 'hotfix'],
+  regExp: '(feature|bugfix|hotfix)'
+}, {
+  name: 'swimlane',
+  type: 'input',
+  optional: true,
+  default: '',
+  message: D.CONFIG_SWIM,
+  prefix: 'sl-',
+  regExp: 'sl-([0-9a-z]{4,}-[a-z]{5})'
+}, {
+  name: 'packageName',
+  type: 'input',
+  optional: true,
+  default: '',
+  message: D.CONFIG_SUBP,
+  prefix: '@',
+  regExp: '@([0-9a-z-]+)'
+}, {
+  name: 'businessKey',
+  type: 'input',
+  optional: true,
+  default: '',
+  message: D.CONFIG_BIZK,
+  prefix: '#',
+  regExp: '#([0-9a-zA-Z_]+)'
+}, {
+  name: 'id',
+  type: 'input',
+  optional: true,
+  default: '',
+  message: D.CONFIG_REID,
+  prefix: '',
+  regExp: '(km-[0-9]+|ones-[0-9]+|tt-[0-9]+)'
+}];
+
+const getCurrentConfig = userConfig => {
+  var _userConfig$config;
+
+  /** user definedConfig */
+  const customConfig = userConfig !== null && userConfig !== void 0 && (_userConfig$config = userConfig.config) !== null && _userConfig$config !== void 0 && _userConfig$config.length ? userConfig.config : [];
+
+  if (customConfig.length) {
+    return customConfig.filter(config => config.name !== 'desc').concat([{
+      name: 'desc',
+      type: 'input',
+      optional: false,
+      message: D.CONFIG_DESC,
+      default: '',
+      prefix: '',
+      regExp: '.*$'
+    }]);
+  }
+  /** TODO: Merge user configs, use .branchformatrc */
+
+
+  return BRANCH_CONFIG.slice().concat([{
+    name: 'desc',
+    type: 'input',
+    optional: false,
+    message: D.CONFIG_DESC,
+    default: '',
+    prefix: '',
+    regExp: '.*$'
+  }]);
+};
+
+const Chalk = require('chalk');
+
+const Shell$1 = require('shelljs');
+
+const modifyBranch = (branchConfig, config) => {
+  if (!branchConfig.type || !branchConfig.desc) {
+    console.log(Chalk.red(D.HINT_NODESC));
+    throw new Error(D.HINT_NODESC);
+  }
+  /** check if optional config has all satisfied */
+
+
+  let satisfied = true;
+  config.forEach(option => {
+    if (!branchConfig[option.name] && !option.optional) {
+      satisfied = false;
+      console.log(Chalk.red(`${D.HINT_MUSTOP.replace('__MUST_OP__', option.name)}`));
+    }
+  });
+
+  if (!satisfied) {
+    console.log(Chalk.red(D.HINT_MUSTDS));
+    throw new Error(D.HINT_MUSTDS);
+  }
+  /** Start build Branch and perform checkout */
+
+
+  const targetBranch = config.map(option => {
+    var _branchConfig$option$;
+
+    return (_branchConfig$option$ = branchConfig[option.name]) !== null && _branchConfig$option$ !== void 0 ? _branchConfig$option$ : '';
+  }).filter(Boolean).join('/');
+  /** performCheckout */
+
+  console.log();
+  console.log();
+  console.log(Chalk.green(D.HINT_PRECKO.replace('__TGT_BR__', targetBranch)));
+  console.log(Chalk.white(D.HINT_STSING));
+  /** Stash changes */
+
+  Shell$1.exec('git stash');
+  console.log(Chalk.white(D.HINT_CHKING));
+  Shell$1.exec(`git checkout -b ${targetBranch} -f`);
+  console.log(Chalk.green(D.HINT_CHKEND));
+  Shell$1.exec(`git push --set-upstream origin ${targetBranch} --no-verify`);
+  console.log(Chalk.green());
+};
+
+const inquirer = require('inquirer');
+
+const Chalk$1 = require('chalk');
+
+const CONFIRM_QUESTIONS = [{
+  type: 'input',
+  name: 'confirm',
+  message: D.ANSWER_CONF,
+  default: 'Y'
+}];
+
+const getQuestions = (currentBranch, config) => {
+  const currentQuestions = config.slice();
+  return {
+    questions: currentQuestions,
+    defaults: currentQuestions.reduce((prev, curr) => {
+      prev[curr.name] =
+      /** Top1: 从老 Branch 来 */
+      currentBranch[curr.name] ? currentBranch[curr.name]
+      /** Top2: 从用户定义的配置中 来 */
+      : curr.default;
+      return prev;
+    }, {})
+  };
+};
+
+const logAnswers = answers => {
+  console.log(D.ANSWER_LIST);
+  Object.keys(answers).forEach(answerKey => {
+    if (answers[answerKey]) {
+      console.log(Chalk$1.green(`${answerKey}: `) + Chalk$1.white(answers[answerKey]));
+    }
+  });
+};
+
+const askQuestions = async (config, currentBranch) => {
+  let confirmed = false;
+  const {
+    questions,
+    defaults
+  } = getQuestions(currentBranch, config);
+  let answers = Object.assign({}, defaults);
+
+  while (!confirmed) {
+    answers = await inquirer.prompt(questions, defaults);
+    console.log();
+    logAnswers(answers);
+    const userConfirm = await inquirer.prompt(CONFIRM_QUESTIONS, {
+      confirm: 'Y'
+    });
+
+    if (userConfirm.confirm.toLowerCase() === 'y') {
+      confirmed = true;
+    }
+  }
+
+  return answers;
+};
+
 const http = require('http');
 
 const https = require('https');
@@ -1758,15 +2069,15 @@ var semver$1 = {
 var semver_16 = semver$1.prerelease;
 var semver_23 = semver$1.gt;
 
-const Chalk = require('chalk');
+const Chalk$2 = require('chalk');
 
-const Shell = require('shelljs');
+const Shell$2 = require('shelljs');
 
 let npmMirror = 'http://registry.npmjs.org';
 
 const getNpmMirror = () => {
   try {
-    const mirrorResult = Shell.exec('npm config get registry');
+    const mirrorResult = Shell$2.exec('npm config get registry');
     npmMirror = mirrorResult;
   } catch (err) {
     npmMirror = 'http://registry.npmjs.org';
@@ -1808,7 +2119,7 @@ const updateNotice = async (packagePath, message) => {
     if (semver_23(latestVersion, localVersion)) {
       const displayMessage = getLocalMessage(pkg.name, latestVersion, message);
       console.log();
-      console.log(Chalk.green(displayMessage));
+      console.log(Chalk$2.green(displayMessage));
       console.log();
       return {
         message: displayMessage,
@@ -1818,11 +2129,41 @@ const updateNotice = async (packagePath, message) => {
       };
     }
   } catch (err) {
-    console.log(Chalk.red(err.message));
+    console.log(Chalk$2.red(err.message));
     return false;
   }
 };
 
+const rcfile = require('rcfile');
+
 const path = require('path');
 
-updateNotice(path.join(__dirname, 'package.json'));
+const pkgJsonPath = path.join(process.cwd(), 'package.json');
+console.log(process.cwd());
+
+async function performFormat(directoryPath) {
+  await updateNotice(pkgJsonPath);
+  /** subFolderName */
+
+  const defaultSubPackage = directoryPath.split('/').pop();
+  /** rcPath */
+
+  const rcConfig = rcfile('branchformat', {
+    cwd: directoryPath
+  });
+  /** get configs */
+
+  const configs = getCurrentConfig(rcConfig);
+  /** get current branch */
+
+  const currentBranch = getCurrentBranch();
+  const branchModel = parseExistedBranch(currentBranch, configs, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
+  /** prepare questions */
+
+  const result = await askQuestions(configs, branchModel);
+  /** write target branch */
+
+  return modifyBranch(result, configs);
+}
+
+exports.performFormat = performFormat;

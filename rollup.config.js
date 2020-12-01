@@ -15,6 +15,7 @@ const plugins = [
   typescript(),
   getBabelOutputPlugin({
     presets: [['@babel/preset-env', { useBuiltIns: 'usage', targets: { node: "8" }, corejs: 3 }]],
+    allowAllFormats: true
   }),
 ]
 
@@ -29,6 +30,11 @@ const core = {
     {
       file: './dist/index.esm.js',
       format: 'esm',
+    },
+    {
+      name: 'BranchFormat',
+      file: './dist/index.umd.js',
+      format: 'umd',
     },
   ],
   plugins,
