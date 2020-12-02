@@ -1,6 +1,6 @@
 var fs = require('fs')
 var path = require('path')
-var userDir = process.env.cwd()
+var userDir = process.cwd()
 var checkoutFile = path.join(userDir, 'bin', 'checkout')
 var targetPackageJson = path.join(userDir, 'package.json')
 /** 有则不写 */
