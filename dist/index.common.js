@@ -150,7 +150,7 @@ const D = lang === 'zh' ? ZH_DICT : EN_DICT;
 
 const unifyConfigs = item => {
   return item.map(config => {
-    var _config$options, _config$message, _config$default, _config$optional, _config$prefix, _config$regExp;
+    var _config$options, _config$message, _config$default, _config$envDefault, _config$optional, _config$prefix, _config$regExp;
 
     const listDefaults = config.type === 'list' ? {
       type: 'list',
@@ -163,6 +163,7 @@ const unifyConfigs = item => {
       name: config.name,
       message: (_config$message = config === null || config === void 0 ? void 0 : config.message) !== null && _config$message !== void 0 ? _config$message : D.CONFIG_DEFH.replace('__ITM_NAME__', config.name),
       default: (_config$default = config === null || config === void 0 ? void 0 : config.default) !== null && _config$default !== void 0 ? _config$default : '',
+      envDefault: (_config$envDefault = config === null || config === void 0 ? void 0 : config.envDefault) !== null && _config$envDefault !== void 0 ? _config$envDefault : '',
       optional: (_config$optional = config === null || config === void 0 ? void 0 : config.optional) !== null && _config$optional !== void 0 ? _config$optional : true,
       prefix: (_config$prefix = config === null || config === void 0 ? void 0 : config.prefix) !== null && _config$prefix !== void 0 ? _config$prefix : '',
       regExp: (_config$regExp = config === null || config === void 0 ? void 0 : config.regExp) !== null && _config$regExp !== void 0 ? _config$regExp : '(.*)'
@@ -175,6 +176,7 @@ const BRANCH_CONFIG = [{
   type: 'list',
   optional: false,
   default: 'feature',
+  envDefault: '',
   message: D.CONFIG_TYPE,
   prefix: '',
   options: ['feature', 'bugfix', 'hotfix'],
@@ -184,6 +186,7 @@ const BRANCH_CONFIG = [{
   type: 'input',
   optional: true,
   default: '',
+  envDefault: '',
   message: D.CONFIG_SWIM,
   prefix: 'sl-',
   regExp: 'sl-([0-9a-z]{4,}-[a-z]{5})'
@@ -191,6 +194,7 @@ const BRANCH_CONFIG = [{
   name: 'packageName',
   type: 'input',
   optional: true,
+  envDefault: '',
   default: '',
   message: D.CONFIG_SUBP,
   prefix: '@',
@@ -199,6 +203,7 @@ const BRANCH_CONFIG = [{
   name: 'businessKey',
   type: 'input',
   optional: true,
+  envDefault: '',
   default: '',
   message: D.CONFIG_BIZK,
   prefix: '#',
@@ -207,6 +212,7 @@ const BRANCH_CONFIG = [{
   name: 'id',
   type: 'input',
   optional: true,
+  envDefault: '',
   default: '',
   message: D.CONFIG_REID,
   prefix: '',
@@ -214,10 +220,8 @@ const BRANCH_CONFIG = [{
 }];
 
 const getCurrentConfig = userConfig => {
-  var _userConfig$config;
-
   /** user definedConfig */
-  const customConfig = unifyConfigs(userConfig !== null && userConfig !== void 0 && (_userConfig$config = userConfig.config) !== null && _userConfig$config !== void 0 && _userConfig$config.length ? userConfig.config : []);
+  const customConfig = unifyConfigs(userConfig);
 
   if (customConfig.length) {
     return customConfig.filter(config => config.name !== 'desc').concat([{
@@ -225,6 +229,7 @@ const getCurrentConfig = userConfig => {
       type: 'input',
       optional: false,
       message: D.CONFIG_DESC,
+      envDefault: '',
       default: '',
       prefix: '',
       regExp: '.*$'
@@ -238,6 +243,7 @@ const getCurrentConfig = userConfig => {
     type: 'input',
     optional: false,
     message: D.CONFIG_DESC,
+    envDefault: '',
     default: '',
     prefix: '',
     regExp: '.*$'
@@ -318,12 +324,15 @@ const getQuestions = (currentBranch, config) => {
         type,
         message,
         options,
+        envDefault,
         default: df
       } = question;
       const defaults =
-      /** Top1: 从老 Branch 来 */
-      currentBranch[name] ? currentBranch[name]
-      /** Top2: 从用户定义的配置中 来 */
+      /** Top1: 从 env 处理得出的默认值来 */
+      envDefault ? envDefault
+      /** Top2: 从老 Branch 来 */
+      : currentBranch[name] ? currentBranch[name]
+      /** Top3: 从用户定义的默认值中来 */
       : df;
 
       if (options) {
@@ -332,6 +341,7 @@ const getQuestions = (currentBranch, config) => {
           name,
           type,
           message,
+          envDefault,
           default: defaults
         };
       }
@@ -345,9 +355,11 @@ const getQuestions = (currentBranch, config) => {
     }),
     defaults: currentQuestions.reduce((prev, curr) => {
       prev[curr.name] =
-      /** Top1: 从老 Branch 来 */
-      currentBranch[curr.name] ? currentBranch[curr.name]
-      /** Top2: 从用户定义的配置中 来 */
+      /** Top1: 从 env 处理得出的默认值来 */
+      curr.envDefault ? curr.envDefault
+      /** Top2: 从老 Branch 来 */
+      : currentBranch[curr.name] ? currentBranch[curr.name]
+      /** Top3: 从用户定义的默认值中来 */
       : curr.default;
       return prev;
     }, {})
@@ -2216,6 +2228,8 @@ const pkgJsonPath = path.join(process.cwd(), 'package.json');
 console.log(process.cwd());
 
 async function performFormat(directoryPath) {
+  var _rcConfig$config;
+
   await updateNotice(pkgJsonPath);
   /** subFolderName */
 
@@ -2227,15 +2241,13 @@ async function performFormat(directoryPath) {
     configFileName: 'branchformat.config.js',
     defaultExtension: '.js'
   });
-  console.log(rcConfig);
   /** get configs */
 
-  const configs = getCurrentConfig(rcConfig);
+  const configs = getCurrentConfig((_rcConfig$config = rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.config) !== null && _rcConfig$config !== void 0 ? _rcConfig$config : []);
   /** get current branch */
 
   const currentBranch = getCurrentBranch();
   const branchModel = parseExistedBranch(currentBranch, configs, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
-  console.log('BranchModel: ', branchModel);
   /** prepare questions */
 
   const result = await askQuestions(configs, branchModel); // /** write target branch */
