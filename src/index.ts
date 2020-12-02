@@ -6,7 +6,6 @@ import { updateNotice } from "./update";
 const rcfile = require('rcfile')
 const path = require('path')
 const pkgJsonPath = path.join(process.cwd(), 'package.json')
-console.log(process.cwd())
 
 export async function performFormat(directoryPath: string) {
     await updateNotice(pkgJsonPath)

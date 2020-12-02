@@ -17,7 +17,7 @@ const isBranchShouldParse = (branch: string, skipBranch: string[]) => {
 }
 
 export const getCurrentBranch = () => {
-    const branch = Shell.exec('git symbolic-ref --short -q HEAD')
+    const branch = Shell.exec('git symbolic-ref --short -q HEAD', { silent: true })
     return branch.stdout.trim()
 }
 

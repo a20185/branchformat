@@ -42,7 +42,9 @@ const isBranchShouldParse = (branch, skipBranch) => {
 };
 
 const getCurrentBranch = () => {
-  const branch = Shell.exec('git symbolic-ref --short -q HEAD');
+  const branch = Shell.exec('git symbolic-ref --short -q HEAD', {
+    silent: true
+  });
   return branch.stdout.trim();
 };
 /** 获取当前分支名称 */
@@ -2159,29 +2161,31 @@ const Chalk$2 = require('chalk');
 
 const Shell$2 = require('shelljs');
 
-let npmMirror = 'http://registry.npmjs.org';
+let npmMirror = 'http://registry.npmjs.org/';
 
 const getNpmMirror = () => {
   try {
-    const mirrorResult = Shell$2.exec('npm config get registry');
+    const mirrorResult = Shell$2.exec('npm config get registry', {
+      silent: true
+    });
     npmMirror = mirrorResult.stdout.trim();
   } catch (err) {
-    npmMirror = 'http://registry.npmjs.org';
+    npmMirror = 'http://registry.npmjs.org/';
   }
 };
 
 const getProperNpmListPath = packageName => {
-  const hasNpmMirror = npmMirror !== 'http://registry.npmjs.org';
+  const hasNpmMirror = npmMirror !== 'http://registry.npmjs.org/';
 
   if (hasNpmMirror) {
-    return `${npmMirror}/${packageName}`;
+    return `${npmMirror}${packageName}`;
   }
 
   return `http://registry.npmjs.org/${packageName}`;
 };
 
 const getLocalMessage = (packageName, latestVersion, originMessage) => {
-  return (originMessage || `${packageName} 新版本 __L_T_VER__ 已经发布, 运行以下命令，立即更新到最新版吧 \n\nnpm i -g ${packageName} \nyarn add -g ${packageName} \n`).replace('__L_T_VER__', latestVersion);
+  return (originMessage || `${packageName} 新版本 __L_T_VER__ 已经发布, 运行以下命令，立即更新到最新版吧 \n\nnpm i ${packageName} \nyarn add ${packageName} \n`).replace('__L_T_VER__', latestVersion);
 };
 
 const updateNotice = async (packagePath, message) => {
@@ -2204,7 +2208,6 @@ const updateNotice = async (packagePath, message) => {
 
     if (semver_23(latestVersion, localVersion)) {
       const displayMessage = getLocalMessage(pkg.name, latestVersion, message);
-      console.log();
       console.log(Chalk$2.green(displayMessage));
       console.log();
       return {
@@ -2225,7 +2228,6 @@ const rcfile = require('rcfile');
 const path = require('path');
 
 const pkgJsonPath = path.join(process.cwd(), 'package.json');
-console.log(process.cwd());
 
 async function performFormat(directoryPath) {
   var _rcConfig$config;
