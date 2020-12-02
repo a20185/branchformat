@@ -12,9 +12,11 @@
   },
   "files": [
     "package.json",
+    "postinstall.js",
     "babel-config.js",
     "test.js",
-    "dist"
+    "dist",
+    "src/templates"
   ],
   "keywords": [
     "branch",
