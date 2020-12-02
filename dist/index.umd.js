@@ -63,9 +63,9 @@ require("core-js/modules/es.string.trim");
 
 
     while (branchSlices.length && parsingIndex < parsingPhases.length) {
-      const brResult = branchSlices.pop();
+      const brResult = branchSlices.shift();
       let matchResult = null;
-      let targetIndex = 0;
+      let targetIndex = parsingIndex;
       /** 从前往后看看那个匹配上了 */
 
       for (let idx = parsingIndex; idx < parsingPhases.length; idx++) {
@@ -89,9 +89,10 @@ require("core-js/modules/es.string.trim");
       if (matchResult) {
         /** 匹配上了，记录，然后更新 */
         parseResult[parsingPhases[targetIndex].name] = matchResult[1];
+        targetIndex += 1;
       } else {
         /** 说明到最后一个都匹配不上 */
-        for (let pos = parsingIndex; pos <= targetIndex; pos++) {
+        for (let pos = parsingIndex; pos < targetIndex; pos++) {
           restFeatures.push(brResult);
         }
       }
@@ -99,7 +100,7 @@ require("core-js/modules/es.string.trim");
       parsingIndex = targetIndex;
     }
 
-    parseResult.desc = restFeatures.join('');
+    parseResult.desc = restFeatures.join('/');
     return parseResult;
   };
 
