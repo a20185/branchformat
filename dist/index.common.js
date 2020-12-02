@@ -2274,6 +2274,12 @@ async function isCurrentBranchValid(directoryPath) {
   /** get current branch */
 
   const currentBranch = getCurrentBranch();
+  /** Skip with skippable branches */
+
+  if (!isBranchShouldParse(currentBranch, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip)) {
+    return true;
+  }
+
   const branchModel = parseExistedBranch(currentBranch, configs, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
   /** Loop through branchModel and check if currentValid */
 

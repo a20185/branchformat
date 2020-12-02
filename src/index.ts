@@ -1,4 +1,4 @@
-import { getCurrentBranch, parseExistedBranch } from './branch';
+import { getCurrentBranch, isBranchShouldParse, parseExistedBranch } from './branch';
 import { getCurrentConfig } from './config';
 import { modifyBranch } from './modify';
 import { askQuestions } from './question';
@@ -41,6 +41,10 @@ export async function isCurrentBranchValid(directoryPath: string) {
     const configs = getCurrentConfig(rcConfig?.config ?? [])
     /** get current branch */
     const currentBranch = getCurrentBranch()
+    /** Skip with skippable branches */
+    if (!isBranchShouldParse(currentBranch, rcConfig?.skip)) {
+        return true
+    }
     const branchModel = parseExistedBranch(currentBranch, configs, rcConfig?.skip)
     /** Loop through branchModel and check if currentValid */
     return configs.every(config => {
