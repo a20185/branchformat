@@ -1,6 +1,6 @@
 {
   "name": "@nibfe/branchformat",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "⚙ A simple util to help quick checkout or switch branches that correspond to team regulations",
   "main": "dist/index.common.js",
   "module": "dist/index.esm.js",
