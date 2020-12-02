@@ -25,25 +25,31 @@ const getQuestions = (currentBranch: BranchAnswers, config: readonly OptionItem[
     const currentQuestions = config.slice()
     return {
         questions: currentQuestions.map(question => {
-            const { name, type, message, options, default: df } = question as any
+            const { name, type, message, options, envDefault, default: df } = question as any
             const defaults =
-                /** Top1: 从老 Branch 来 */
-                currentBranch[name]
-                    ? currentBranch[name]
-                    /** Top2: 从用户定义的配置中 来 */
-                    : df
+                /** Top1: 从 env 处理得出的默认值来 */
+                envDefault
+                    ? envDefault
+                    /** Top2: 从老 Branch 来 */
+                    : currentBranch[name]
+                        ? currentBranch[name]
+                        /** Top3: 从用户定义的默认值中来 */
+                        : df
             if (options) {
-                return { choices: options, name, type, message, default: defaults }
+                return { choices: options, name, type, message, envDefault, default: defaults }
             }
             return { name, type, message, default: defaults }
         }),
         defaults: currentQuestions.reduce((prev, curr) => {
             prev[curr.name] =
-                /** Top1: 从老 Branch 来 */
-                currentBranch[curr.name]
-                    ? currentBranch[curr.name]
-                    /** Top2: 从用户定义的配置中 来 */
-                    : curr.default
+                /** Top1: 从 env 处理得出的默认值来 */
+                curr.envDefault
+                    ? curr.envDefault
+                    /** Top2: 从老 Branch 来 */
+                    : currentBranch[curr.name]
+                        ? currentBranch[curr.name]
+                        /** Top3: 从用户定义的默认值中来 */
+                        : curr.default
             return prev
         }, {} as Partial<BranchAnswers>)
     }

@@ -9,6 +9,15 @@ module.exports = {
             prefix: '',
             options: ['feature', 'bugfix', 'hotfix', 'docs'],
             regExp: '(feature|bugfix|hotfix|docs)'
+        },
+        {
+            name: 'conf',
+            type: 'input',
+            optional: true,
+            default: '',
+            envDefault: process.cwd().split('/').pop(),
+            prefix: '@',
+            regExp: '@([a-zA-Z0-9]+)'
         }
     ],
     skip: [

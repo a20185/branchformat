@@ -3,6 +3,7 @@ import { D } from './lib/dict'
 export interface BaseOption {
     name: string
     optional: boolean
+    envDefault: string
     default: string
     message: string
     prefix: string
@@ -32,6 +33,7 @@ const unifyConfigs = (item: OptionItem[]): OptionItem[] => {
             name: config.name,
             message: config?.message ?? D.CONFIG_DEFH.replace('__ITM_NAME__', config.name),
             default: config?.default ?? '',
+            envDefault: config?.envDefault ?? '',
             optional: config?.optional ?? true,
             prefix: config?.prefix ?? '',
             regExp: config?.regExp ?? '(.*)',
@@ -47,6 +49,7 @@ const BRANCH_CONFIG = [
         type: 'list',
         optional: false,
         default: 'feature',
+        envDefault: '',
         message: D.CONFIG_TYPE,
         prefix: '',
         options: ['feature', 'bugfix', 'hotfix'],
@@ -57,6 +60,7 @@ const BRANCH_CONFIG = [
         type: 'input',
         optional: true,
         default: '',
+        envDefault: '',
         message: D.CONFIG_SWIM,
         prefix: 'sl-',
         regExp: 'sl-([0-9a-z]{4,}-[a-z]{5})'
@@ -65,6 +69,7 @@ const BRANCH_CONFIG = [
         name: 'packageName',
         type: 'input',
         optional: true,
+        envDefault: '',
         default: '',
         message: D.CONFIG_SUBP,
         prefix: '@',
@@ -74,6 +79,7 @@ const BRANCH_CONFIG = [
         name: 'businessKey',
         type: 'input',
         optional: true,
+        envDefault: '',
         default: '',
         message: D.CONFIG_BIZK,
         prefix: '#',
@@ -83,6 +89,7 @@ const BRANCH_CONFIG = [
         name: 'id',
         type: 'input',
         optional: true,
+        envDefault: '',
         default: '',
         message: D.CONFIG_REID,
         prefix: '',
@@ -90,9 +97,9 @@ const BRANCH_CONFIG = [
     }
 ] as const
 
-export const getCurrentConfig = (userConfig?: { config: OptionItem[] }): readonly OptionItem[] => {
+export const getCurrentConfig = (userConfig: OptionItem[]): readonly OptionItem[] => {
     /** user definedConfig */
-    const customConfig = unifyConfigs(userConfig?.config?.length ? userConfig.config : [])
+    const customConfig = unifyConfigs(userConfig)
     if (customConfig.length) {
         return customConfig.filter(config => config.name !== 'desc').concat([
             {
@@ -100,6 +107,7 @@ export const getCurrentConfig = (userConfig?: { config: OptionItem[] }): readonl
                 type: 'input',
                 optional: false,
                 message: D.CONFIG_DESC,
+                envDefault: '',
                 default: '',
                 prefix: '',
                 regExp: '.*$'
@@ -113,6 +121,7 @@ export const getCurrentConfig = (userConfig?: { config: OptionItem[] }): readonl
             type: 'input',
             optional: false,
             message: D.CONFIG_DESC,
+            envDefault: '',
             default: '',
             prefix: '',
             regExp: '.*$'
