@@ -2,6 +2,7 @@ const lang = process.env.LANG?.startsWith('zh') ? 'zh' : 'en'
 
 const ZH_DICT = {
     CONFIG_TTLE: '分支切出助手（任意输入项填入「no」将等同于不填写）',
+    CONFIG_DEFH: '请输入 __ITM_NAME__ :',
     CONFIG_DESC: '请输入需求/修复的相关描述（建议小于 30 字）：',
     CONFIG_TYPE: '请选择分支类型（默认：feature）：',
     CONFIG_SWIM: '请输入使用的泳道名称（例如 1787-qkgku、ouyifeng-hhhhh 等）：',
@@ -23,6 +24,7 @@ const ZH_DICT = {
 
 const EN_DICT = {
     CONFIG_TTLE: 'Branch format switcher (Input \'no\' at any input term will erase the result)',
+    CONFIG_DEFH: 'Input __ITM_NAME__ :',
     CONFIG_DESC: 'Brief descriptions (less than 30 letters) :',
     CONFIG_TYPE: 'Select branch type (default：feature) :',
     CONFIG_SWIM: 'Input swimlane (E.g. 1787-qkgku、ouyifeng-hhhhh) :',

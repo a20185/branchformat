@@ -18,6 +18,29 @@ export interface ListOption extends BaseOption {
 
 export type OptionItem = ListOption | InputOption
 
+const unifyConfigs = (item: OptionItem[]): OptionItem[] => {
+    return item.map(config => {
+        const listDefaults =
+            config.type === 'list'
+                ? { type: 'list', options: config.options?.length ? config.options : [] }
+                : {}
+        const inputDefaults =
+            config.type === 'input'
+                ? { type: 'input' }
+                : {}
+        return {
+            name: config.name,
+            message: config?.message ?? D.CONFIG_DEFH.replace('__ITM_NAME__', config.name),
+            default: config?.default ?? '',
+            optional: config?.optional ?? true,
+            prefix: config?.prefix ?? '',
+            regExp: config?.regExp ?? '(.*)',
+            ...inputDefaults,
+            ...listDefaults
+        } as any
+    })
+}
+
 const BRANCH_CONFIG = [
     {
         name: 'type',
@@ -69,7 +92,7 @@ const BRANCH_CONFIG = [
 
 export const getCurrentConfig = (userConfig?: { config: OptionItem[] }): readonly OptionItem[] => {
     /** user definedConfig */
-    const customConfig = userConfig?.config?.length ? userConfig.config : []
+    const customConfig = unifyConfigs(userConfig?.config?.length ? userConfig.config : [])
     if (customConfig.length) {
         return customConfig.filter(config => config.name !== 'desc').concat([
             {

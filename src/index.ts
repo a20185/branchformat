@@ -14,8 +14,11 @@ export async function performFormat(directoryPath: string) {
     const defaultSubPackage = directoryPath.split('/').pop()
     /** rcPath */
     const rcConfig = rcfile('branchformat', {
-        cwd: directoryPath
+        cwd: directoryPath,
+        configFileName: 'branchformat.config.js',
+        defaultExtension: '.js'
     })
+    console.log(rcConfig)
     /** get configs */
     const configs = getCurrentConfig(rcConfig)
     /** get current branch */

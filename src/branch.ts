@@ -10,7 +10,7 @@ const getParsingPhases = (config: readonly OptionItem[]) => {
 }
 
 const isBranchShouldParse = (branch: string, skipBranch: string[]) => {
-    if (skipBranch.find((current) => branch === current)) {
+    if (skipBranch.find((current) => (new RegExp(current)).test(branch))) {
         return false
     }
     return true

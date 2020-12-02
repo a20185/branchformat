@@ -7,6 +7,12 @@ import "core-js/modules/es.string.trim";
 
 var _process$env$LANG;
 
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 const Shell = require('shelljs');
 
 const defaultSkipbranch = ['master', 'staging'];
@@ -17,7 +23,7 @@ const getParsingPhases = config => {
 };
 
 const isBranchShouldParse = (branch, skipBranch) => {
-  if (skipBranch.find(current => branch === current)) {
+  if (skipBranch.find(current => new RegExp(current).test(branch))) {
     return false;
   }
 
@@ -89,6 +95,7 @@ const parseExistedBranch = (currentBranch, config, skipBranchs = defaultSkipbran
 const lang = (_process$env$LANG = process.env.LANG) !== null && _process$env$LANG !== void 0 && _process$env$LANG.startsWith('zh') ? 'zh' : 'en';
 const ZH_DICT = {
   CONFIG_TTLE: '分支切出助手（任意输入项填入「no」将等同于不填写）',
+  CONFIG_DEFH: '请输入 __ITM_NAME__ :',
   CONFIG_DESC: '请输入需求/修复的相关描述（建议小于 30 字）：',
   CONFIG_TYPE: '请选择分支类型（默认：feature）：',
   CONFIG_SWIM: '请输入使用的泳道名称（例如 1787-qkgku、ouyifeng-hhhhh 等）：',
@@ -109,6 +116,7 @@ const ZH_DICT = {
 };
 const EN_DICT = {
   CONFIG_TTLE: 'Branch format switcher (Input \'no\' at any input term will erase the result)',
+  CONFIG_DEFH: 'Input __ITM_NAME__ :',
   CONFIG_DESC: 'Brief descriptions (less than 30 letters) :',
   CONFIG_TYPE: 'Select branch type (default：feature) :',
   CONFIG_SWIM: 'Input swimlane (E.g. 1787-qkgku、ouyifeng-hhhhh) :',
@@ -128,6 +136,29 @@ const EN_DICT = {
   HINT_SAMEBR: 'Same branch before and after checkout, it won\'t take any effects...'
 };
 const D = lang === 'zh' ? ZH_DICT : EN_DICT;
+
+const unifyConfigs = item => {
+  return item.map(config => {
+    var _config$options, _config$message, _config$default, _config$optional, _config$prefix, _config$regExp;
+
+    const listDefaults = config.type === 'list' ? {
+      type: 'list',
+      options: (_config$options = config.options) !== null && _config$options !== void 0 && _config$options.length ? config.options : []
+    } : {};
+    const inputDefaults = config.type === 'input' ? {
+      type: 'input'
+    } : {};
+    return _objectSpread(_objectSpread({
+      name: config.name,
+      message: (_config$message = config === null || config === void 0 ? void 0 : config.message) !== null && _config$message !== void 0 ? _config$message : D.CONFIG_DEFH.replace('__ITM_NAME__', config.name),
+      default: (_config$default = config === null || config === void 0 ? void 0 : config.default) !== null && _config$default !== void 0 ? _config$default : '',
+      optional: (_config$optional = config === null || config === void 0 ? void 0 : config.optional) !== null && _config$optional !== void 0 ? _config$optional : true,
+      prefix: (_config$prefix = config === null || config === void 0 ? void 0 : config.prefix) !== null && _config$prefix !== void 0 ? _config$prefix : '',
+      regExp: (_config$regExp = config === null || config === void 0 ? void 0 : config.regExp) !== null && _config$regExp !== void 0 ? _config$regExp : '(.*)'
+    }, inputDefaults), listDefaults);
+  });
+};
+
 const BRANCH_CONFIG = [{
   name: 'type',
   type: 'list',
@@ -175,7 +206,7 @@ const getCurrentConfig = userConfig => {
   var _userConfig$config;
 
   /** user definedConfig */
-  const customConfig = userConfig !== null && userConfig !== void 0 && (_userConfig$config = userConfig.config) !== null && _userConfig$config !== void 0 && _userConfig$config.length ? userConfig.config : [];
+  const customConfig = unifyConfigs(userConfig !== null && userConfig !== void 0 && (_userConfig$config = userConfig.config) !== null && _userConfig$config !== void 0 && _userConfig$config.length ? userConfig.config : []);
 
   if (customConfig.length) {
     return customConfig.filter(config => config.name !== 'desc').concat([{
@@ -2181,8 +2212,11 @@ async function performFormat(directoryPath) {
   /** rcPath */
 
   const rcConfig = rcfile('branchformat', {
-    cwd: directoryPath
+    cwd: directoryPath,
+    configFileName: 'branchformat.config.js',
+    defaultExtension: '.js'
   });
+  console.log(rcConfig);
   /** get configs */
 
   const configs = getCurrentConfig(rcConfig);
