@@ -5,7 +5,7 @@
   "main": "dist/index.common.js",
   "module": "dist/index.esm.js",
   "scripts": {
-    "test": "jest",
+    "test": "echo 'No test specified!'",
     "build": "rm -rf ./dist && rollup -c rollup.config.js",
     "build:watch": "rollup -c rollup.config.js -w"
   },
