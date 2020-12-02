@@ -79,14 +79,8 @@ require("core-js/modules/es.string.trim");
           break;
         }
       }
-      /** 回退一个 */
 
-
-      if (targetIndex === parsingPhases.length) {
-        targetIndex -= 1;
-      }
-
-      if (matchResult) {
+      if (matchResult && targetIndex < parsingPhases.length) {
         /** 匹配上了，记录，然后更新 */
         parseResult[parsingPhases[targetIndex].name] = matchResult[1];
         targetIndex += 1;
@@ -100,7 +94,7 @@ require("core-js/modules/es.string.trim");
       parsingIndex = targetIndex;
     }
 
-    parseResult.desc = restFeatures.join('/');
+    parseResult.desc = restFeatures.concat(branchSlices).join('/');
     return parseResult;
   };
 
@@ -269,7 +263,7 @@ require("core-js/modules/es.string.trim");
     Shell$1.exec(`git checkout -b ${targetBranch} -f`);
     console.log(Chalk.green(D.HINT_CHKEND));
     Shell$1.exec(`git push --set-upstream origin ${targetBranch} --no-verify`);
-    console.log(Chalk.green());
+    console.log(Chalk.green(D.HINT_ALLEND));
   };
 
   const inquirer = require('inquirer');

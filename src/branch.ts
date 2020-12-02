@@ -57,12 +57,7 @@ export const parseExistedBranch = (currentBranch: string, config: readonly Optio
         }
       }
   
-      /** 回退一个 */
-      if (targetIndex === parsingPhases.length) {
-        targetIndex -= 1
-      }
-  
-      if (matchResult) {
+      if (matchResult && targetIndex < parsingPhases.length) {
         /** 匹配上了，记录，然后更新 */
         parseResult[parsingPhases[targetIndex].name] = matchResult[1]
         targetIndex += 1
@@ -74,6 +69,6 @@ export const parseExistedBranch = (currentBranch: string, config: readonly Optio
       }
       parsingIndex = targetIndex
     }
-    parseResult.desc = restFeatures.join('/')
+    parseResult.desc = restFeatures.concat(branchSlices).join('/')
     return parseResult
   }
