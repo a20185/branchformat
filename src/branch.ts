@@ -63,9 +63,7 @@ export const parseExistedBranch = (currentBranch: string, config: readonly Optio
         targetIndex += 1
       } else {
         /** 说明到最后一个都匹配不上 */
-        for (let pos = parsingIndex; pos < targetIndex; pos++) {
-          restFeatures.push(brResult)
-        }
+        restFeatures.push(brResult)
       }
       parsingIndex = targetIndex
     }

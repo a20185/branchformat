@@ -76,9 +76,7 @@ const parseExistedBranch = (currentBranch, config, skipBranchs = defaultSkipbran
       targetIndex += 1;
     } else {
       /** 说明到最后一个都匹配不上 */
-      for (let pos = parsingIndex; pos < targetIndex; pos++) {
-        restFeatures.push(brResult);
-      }
+      restFeatures.push(brResult);
     }
 
     parsingIndex = targetIndex;
@@ -90,6 +88,7 @@ const parseExistedBranch = (currentBranch, config, skipBranchs = defaultSkipbran
 
 const lang = (_process$env$LANG = process.env.LANG) !== null && _process$env$LANG !== void 0 && _process$env$LANG.startsWith('zh') ? 'zh' : 'en';
 const ZH_DICT = {
+  CONFIG_TTLE: '分支切出助手（任意输入项填入「no」将等同于不填写）',
   CONFIG_DESC: '请输入需求/修复的相关描述（建议小于 30 字）：',
   CONFIG_TYPE: '请选择分支类型（默认：feature）：',
   CONFIG_SWIM: '请输入使用的泳道名称（例如 1787-qkgku、ouyifeng-hhhhh 等）：',
@@ -109,6 +108,7 @@ const ZH_DICT = {
   HINT_SAMEBR: '切出前后分支相同，您本次操作将不会产生效果...'
 };
 const EN_DICT = {
+  CONFIG_TTLE: 'Branch format switcher (Input \'no\' at any input term will erase the result)',
   CONFIG_DESC: 'Brief descriptions (less than 30 letters) :',
   CONFIG_TYPE: 'Select branch type (default：feature) :',
   CONFIG_SWIM: 'Input swimlane (E.g. 1787-qkgku、ouyifeng-hhhhh) :',
@@ -330,7 +330,15 @@ const askQuestions = async (config, currentBranch) => {
   let answers = Object.assign({}, defaults);
 
   while (!confirmed) {
+    console.log(Chalk$1.cyan(D.CONFIG_TTLE));
     answers = Object.assign({}, defaults, await inquirer.prompt(questions));
+    /** hold defaults */
+
+    Object.keys(answers).forEach(answerKey => {
+      if (answers[answerKey] === 'no') {
+        answers[answerKey] = '';
+      }
+    });
     console.log();
     logAnswers(answers);
     const userConfirm = await inquirer.prompt(CONFIRM_QUESTIONS);
