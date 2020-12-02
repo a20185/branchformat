@@ -27,3 +27,24 @@ export async function performFormat(directoryPath: string) {
     // /** write target branch */
     return modifyBranch(result, configs, currentBranch)
 }
+
+
+export async function isCurrentBranchValid(directoryPath: string) {
+    await updateNotice(pkgJsonPath)
+    /** rcPath */
+    const rcConfig = rcfile('branchformat', {
+        cwd: directoryPath,
+        configFileName: 'branchformat.config.js',
+        defaultExtension: '.js'
+    })
+    /** get configs */
+    const configs = getCurrentConfig(rcConfig?.config ?? [])
+    /** get current branch */
+    const currentBranch = getCurrentBranch()
+    const branchModel = parseExistedBranch(currentBranch, configs, rcConfig?.skip)
+    /** Loop through branchModel and check if currentValid */
+    return configs.every(config => {
+        /** if is optional, or is filled with value */
+        return Boolean(config.optional || branchModel[config.name])
+    })
+}
