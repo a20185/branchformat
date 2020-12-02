@@ -1,0 +1,2 @@
+const { performFormat } = require('@nibfe/branchformat')
+performFormat(process.cwd())
