@@ -1,16 +1,23 @@
+#! /usr/bin/env node
 var fs = require('fs')
 var path = require('path')
 var userDir = process.cwd()
 var binDirectory = path.join(userDir, 'bin')
 var checkoutFile = path.join(binDirectory, 'checkout')
 var targetPackageJson = path.join(userDir, 'package.json')
+
+var checkoutTemplate = `
+#! /usr/bin/env node
+const { performFormat } = require('@nibfe/branchformat')
+performFormat(process.cwd())
+`
+
 /** 有则不写 */
 if (!fs.existsSync(checkoutFile)) {
     if (!fs.existsSync(binDirectory)) {
         fs.mkdirSync(binDirectory)
     }
-    var template = fs.readFileSync('./src/templates/branch')
-    fs.writeFileSync(checkoutFile, template, { encoding: 'utf8' })
+    fs.writeFileSync(checkoutFile, checkoutTemplate, { encoding: 'utf8' })
     console.log('分支切出脚本已添加到 bin/checkout...')
 }
 
