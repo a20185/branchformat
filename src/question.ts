@@ -26,10 +26,16 @@ const getQuestions = (currentBranch: BranchAnswers, config: readonly OptionItem[
     return {
         questions: currentQuestions.map(question => {
             const { name, type, message, options, default: df } = question as any
+            const defaults =
+                /** Top1: 从老 Branch 来 */
+                currentBranch[name]
+                    ? currentBranch[name]
+                    /** Top2: 从用户定义的配置中 来 */
+                    : df
             if (options) {
-                return { choices: options, name, type, message, default: df }
+                return { choices: options, name, type, message, default: defaults }
             }
-            return { name, type, message, default: df }
+            return { name, type, message, default: defaults }
         }),
         defaults: currentQuestions.reduce((prev, curr) => {
             prev[curr.name] =
