@@ -28,7 +28,7 @@ if (!fs.existsSync(checkoutFile)) {
     console.log('分支切出脚本已添加到 bin/checkout...')
 }
 
-if (!fs.existsSync(checkoutFile)) {
+if (!fs.existsSync(verifyFile)) {
     if (!fs.existsSync(binDirectory)) {
         fs.mkdirSync(binDirectory)
     }
@@ -51,8 +51,8 @@ if (pkgFile.scripts && pkgFile.scripts.brverify) {
     console.log('当前已存在 brverify npm 命令，暂不做处理...')
 } else {
     if (!pkgFile.scripts) pkgFile.scripts = {}
-    if (!pkgFile.scripts.checkout) {
-        pkgFile.scripts.checkout = 'node bin/branchverify'
+    if (!pkgFile.scripts.brverify) {
+        pkgFile.scripts.brverify = 'node bin/branchverify'
     }
     console.log('已添加 brverify npm 命令，使用 yarn brverify / npm brverify 即可体验...')
 }
