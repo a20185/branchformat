@@ -288,6 +288,11 @@ require("core-js/modules/es.string.trim");
           options,
           default: df
         } = question;
+        const defaults =
+        /** Top1: 从老 Branch 来 */
+        currentBranch[name] ? currentBranch[name]
+        /** Top2: 从用户定义的配置中 来 */
+        : df;
 
         if (options) {
           return {
@@ -295,7 +300,7 @@ require("core-js/modules/es.string.trim");
             name,
             type,
             message,
-            default: df
+            default: defaults
           };
         }
 
@@ -303,7 +308,7 @@ require("core-js/modules/es.string.trim");
           name,
           type,
           message,
-          default: df
+          default: defaults
         };
       }),
       defaults: currentQuestions.reduce((prev, curr) => {

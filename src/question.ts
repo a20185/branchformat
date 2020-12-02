@@ -64,7 +64,14 @@ export const askQuestions = async (config: readonly OptionItem[], currentBranch:
     const { questions, defaults } = getQuestions(currentBranch, config)
     let answers = Object.assign({}, defaults)
     while (!confirmed) {
+        console.log(Chalk.cyan(D.CONFIG_TTLE))
         answers = Object.assign({}, defaults, await inquirer.prompt(questions))
+        /** hold defaults */
+        Object.keys(answers).forEach((answerKey) => {
+            if (answers[answerKey] === 'no') {
+                answers[answerKey] = ''
+            }
+        })
         console.log()
         logAnswers(answers)
         const userConfirm = await inquirer.prompt(CONFIRM_QUESTIONS)
