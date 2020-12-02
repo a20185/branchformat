@@ -27,7 +27,6 @@ export const parseExistedBranch = (currentBranch: string, config: readonly Optio
     const parsingPhases = getParsingPhases(config)
     /** 根据斜杠做切割 */
     const branchSlices = currentBranch.split('/')
-
     const restFeatures = []
     let parsingIndex = 0
     const parseResult = {} as BranchAnswers
@@ -43,9 +42,9 @@ export const parseExistedBranch = (currentBranch: string, config: readonly Optio
 
     /** 从头到尾 parse */
     while (branchSlices.length && parsingIndex < parsingPhases.length) {
-      const brResult = branchSlices.pop() as string
+      const brResult = branchSlices.shift() as string
       let matchResult = null
-      let targetIndex = 0
+      let targetIndex = parsingIndex
       /** 从前往后看看那个匹配上了 */
       for (let idx = parsingIndex; idx < parsingPhases.length; idx++) {
         targetIndex = idx
@@ -66,14 +65,15 @@ export const parseExistedBranch = (currentBranch: string, config: readonly Optio
       if (matchResult) {
         /** 匹配上了，记录，然后更新 */
         parseResult[parsingPhases[targetIndex].name] = matchResult[1]
+        targetIndex += 1
       } else {
         /** 说明到最后一个都匹配不上 */
-        for (let pos = parsingIndex; pos <= targetIndex; pos++) {
+        for (let pos = parsingIndex; pos < targetIndex; pos++) {
           restFeatures.push(brResult)
         }
       }
       parsingIndex = targetIndex
     }
-    parseResult.desc = restFeatures.join('')
+    parseResult.desc = restFeatures.join('/')
     return parseResult
   }

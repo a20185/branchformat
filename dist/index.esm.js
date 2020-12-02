@@ -110,7 +110,8 @@ const ZH_DICT = {
   HINT_STSING: '正在保存当前分支状态...',
   HINT_CHKING: '正在切出新分支...',
   HINT_CHKEND: '分支切出完成, 开始设置 upstream 并做初始化推送...',
-  HINT_ALLEND: '🍻全部完成！'
+  HINT_ALLEND: '🍻全部完成！',
+  HINT_SAMEBR: '切出前后分支相同，您本次操作将不会产生效果...'
 };
 const EN_DICT = {
   CONFIG_DESC: 'Brief descriptions (less than 30 letters) :',
@@ -128,7 +129,8 @@ const EN_DICT = {
   HINT_STSING: 'Saving current branch state...',
   HINT_CHKING: 'Checking out new branch...',
   HINT_CHKEND: 'Branch checkout completed, setting up upstream with initial push...',
-  HINT_ALLEND: '🍻All done！'
+  HINT_ALLEND: '🍻All done！',
+  HINT_SAMEBR: 'Same branch before and after checkout, it won\'t take any effects...'
 };
 const D = lang === 'zh' ? ZH_DICT : EN_DICT;
 const BRANCH_CONFIG = [{
@@ -205,9 +207,63 @@ const getCurrentConfig = userConfig => {
   }]);
 };
 
+const Chalk = require('chalk');
+
+const Shell$1 = require('shelljs');
+
+const modifyBranch = (branchConfig, config, sourceBranch) => {
+  if (!branchConfig.type || !branchConfig.desc) {
+    console.log(Chalk.red(D.HINT_NODESC));
+    throw new Error(D.HINT_NODESC);
+  }
+  /** check if optional config has all satisfied */
+
+
+  let satisfied = true;
+  config.forEach(option => {
+    if (!branchConfig[option.name] && !option.optional) {
+      satisfied = false;
+      console.log(Chalk.red(`${D.HINT_MUSTOP.replace('__MUST_OP__', option.name)}`));
+    }
+  });
+
+  if (!satisfied) {
+    console.log(Chalk.red(D.HINT_MUSTDS));
+    throw new Error(D.HINT_MUSTDS);
+  }
+  /** Start build Branch and perform checkout */
+
+
+  const targetBranch = config.map(option => {
+    var _ref;
+
+    return (_ref = `${branchConfig[option.name] ? option.prefix + branchConfig[option.name] : ''}`) !== null && _ref !== void 0 ? _ref : '';
+  }).filter(Boolean).join('/');
+
+  if (sourceBranch === targetBranch) {
+    console.log(Chalk.red(D.HINT_SAMEBR));
+    throw new Error(D.HINT_SAMEBR);
+  }
+  /** performCheckout */
+
+
+  console.log();
+  console.log();
+  console.log(Chalk.green(D.HINT_PRECKO.replace('__TGT_BR__', targetBranch)));
+  console.log(Chalk.white(D.HINT_STSING));
+  /** Stash changes */
+
+  Shell$1.exec('git stash');
+  console.log(Chalk.white(D.HINT_CHKING));
+  Shell$1.exec(`git checkout -b ${targetBranch} -f`);
+  console.log(Chalk.green(D.HINT_CHKEND));
+  Shell$1.exec(`git push --set-upstream origin ${targetBranch} --no-verify`);
+  console.log(Chalk.green());
+};
+
 const inquirer = require('inquirer');
 
-const Chalk = require('chalk');
+const Chalk$1 = require('chalk');
 
 const CONFIRM_QUESTIONS = [{
   type: 'input',
@@ -260,7 +316,7 @@ const logAnswers = answers => {
   console.log(D.ANSWER_LIST);
   Object.keys(answers).forEach(answerKey => {
     if (answers[answerKey]) {
-      console.log(Chalk.green(`${answerKey}: `) + Chalk.white(answers[answerKey]));
+      console.log(Chalk$1.green(`${answerKey}: `) + Chalk$1.white(answers[answerKey]));
     }
   });
 };
@@ -2037,15 +2093,15 @@ var semver$1 = {
 var semver_16 = semver$1.prerelease;
 var semver_23 = semver$1.gt;
 
-const Chalk$1 = require('chalk');
+const Chalk$2 = require('chalk');
 
-const Shell$1 = require('shelljs');
+const Shell$2 = require('shelljs');
 
 let npmMirror = 'http://registry.npmjs.org';
 
 const getNpmMirror = () => {
   try {
-    const mirrorResult = Shell$1.exec('npm config get registry');
+    const mirrorResult = Shell$2.exec('npm config get registry');
     npmMirror = mirrorResult.stdout.trim();
   } catch (err) {
     npmMirror = 'http://registry.npmjs.org';
@@ -2087,7 +2143,7 @@ const updateNotice = async (packagePath, message) => {
     if (semver_23(latestVersion, localVersion)) {
       const displayMessage = getLocalMessage(pkg.name, latestVersion, message);
       console.log();
-      console.log(Chalk$1.green(displayMessage));
+      console.log(Chalk$2.green(displayMessage));
       console.log();
       return {
         message: displayMessage,
@@ -2097,7 +2153,7 @@ const updateNotice = async (packagePath, message) => {
       };
     }
   } catch (err) {
-    console.log(Chalk$1.red(err.message));
+    console.log(Chalk$2.red(err.message));
     return false;
   }
 };
@@ -2126,11 +2182,12 @@ async function performFormat(directoryPath) {
 
   const currentBranch = getCurrentBranch();
   const branchModel = parseExistedBranch(currentBranch, configs, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
+  console.log('BranchModel: ', branchModel);
   /** prepare questions */
 
-  const result = await askQuestions(configs, branchModel);
-  console.log(result); // /** write target branch */
-  // return modifyBranch(result, configs)
+  const result = await askQuestions(configs, branchModel); // /** write target branch */
+
+  return modifyBranch(result, configs, currentBranch);
 }
 
 export { performFormat };
