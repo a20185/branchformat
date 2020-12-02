@@ -1,8 +1,9 @@
 {
-  "name": "branchformat",
+  "name": "@nibfe/branchformat",
   "version": "0.0.1",
-  "description": "A simple util to help quick checkout or switch branches that correspond to team regulations",
-  "main": "index.js",
+  "description": "⚙ A simple util to help quick checkout or switch branches that correspond to team regulations",
+  "main": "dist/index.common.js",
+  "module": "dist/index.esm.js",
   "scripts": {
     "test": "jest",
     "build": "rm -rf ./dist && rollup -c rollup.config.js",
