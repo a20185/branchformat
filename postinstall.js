@@ -7,7 +7,6 @@ var checkoutFile = path.join(binDirectory, 'checkout')
 var targetPackageJson = path.join(userDir, 'package.json')
 
 var checkoutTemplate = `
-#! /usr/bin/env node
 const { performFormat } = require('@nibfe/branchformat')
 performFormat(process.cwd())
 `
