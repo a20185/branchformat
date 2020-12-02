@@ -2185,7 +2185,7 @@ const getProperNpmListPath = packageName => {
 };
 
 const getLocalMessage = (packageName, latestVersion, originMessage) => {
-  return (originMessage || `${packageName} 新版本 __L_T_VER__ 已经发布, 运行以下命令，立即更新到最新版吧 \n\nnpm i ${packageName} \nyarn add ${packageName} \n`).replace('__L_T_VER__', latestVersion);
+  return (originMessage || `${packageName} 新版本 __L_T_VER__ 已经发布, 运行以下命令，立即更新到最新版吧 \n\nnpm i ${packageName} -D \nyarn add ${packageName} \n --dev`).replace('__L_T_VER__', latestVersion);
 };
 
 const updateNotice = async (packagePath, message) => {
@@ -2257,4 +2257,31 @@ async function performFormat(directoryPath) {
   return modifyBranch(result, configs, currentBranch);
 }
 
+async function isCurrentBranchValid(directoryPath) {
+  var _rcConfig$config2;
+
+  await updateNotice(pkgJsonPath);
+  /** rcPath */
+
+  const rcConfig = rcfile('branchformat', {
+    cwd: directoryPath,
+    configFileName: 'branchformat.config.js',
+    defaultExtension: '.js'
+  });
+  /** get configs */
+
+  const configs = getCurrentConfig((_rcConfig$config2 = rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.config) !== null && _rcConfig$config2 !== void 0 ? _rcConfig$config2 : []);
+  /** get current branch */
+
+  const currentBranch = getCurrentBranch();
+  const branchModel = parseExistedBranch(currentBranch, configs, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
+  /** Loop through branchModel and check if currentValid */
+
+  return configs.every(config => {
+    /** if is optional, or is filled with value */
+    return Boolean(config.optional || branchModel[config.name]);
+  });
+}
+
+exports.isCurrentBranchValid = isCurrentBranchValid;
 exports.performFormat = performFormat;
