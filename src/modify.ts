@@ -41,5 +41,5 @@ export const modifyBranch = (branchConfig: Partial<BranchAnswers>, config: reado
     Shell.exec(`git checkout -b ${targetBranch} -f`)
     console.log(Chalk.green(D.HINT_CHKEND))
     Shell.exec(`git push --set-upstream origin ${targetBranch} --no-verify`)
-    console.log(Chalk.green())
+    console.log(Chalk.green(D.HINT_ALLEND))
 }
