@@ -2,8 +2,48 @@ import { fetchData } from "./lib/http"
 import { prerelease, gt } from 'semver'
 const Chalk = require('chalk')
 const Shell = require('shelljs')
-
+const fs = require('fs')
 let npmMirror = 'http://registry.npmjs.org/'
+const DEFAULT_VALIDATE_REMAINS = 20
+
+interface BranchFormatRcType {
+    validateRemain: number
+}
+
+const isRcValid = (rcFile: any): rcFile is BranchFormatRcType => {
+    if (!rcFile) return false
+    if (!rcFile.validateRemain || !Number.isInteger(rcFile.validateRemain)) return false
+    return true
+}
+
+const getRcContent = (rcPath: string): BranchFormatRcType => {
+    const rcExists = fs.existsSync(rcPath)
+    const defaultRcResult = {
+        validateRemain: DEFAULT_VALIDATE_REMAINS
+    }
+    if (rcExists) {
+        try {
+            const rcContent = JSON.parse(fs.readFileSync(rcPath, { encoding: 'utf8' }))
+            if (isRcValid(rcContent)) return rcContent
+            return defaultRcResult
+        } catch (err) {
+            return defaultRcResult
+        }
+    }
+    return defaultRcResult
+}
+
+const checkShouldUpdate = (rcPath: string) => {
+    const rcContent = getRcContent(rcPath)
+    if (rcContent.validateRemain === 0) {
+        rcContent.validateRemain = DEFAULT_VALIDATE_REMAINS
+        fs.writeFileSync(rcPath, JSON.stringify(rcContent, null, 2), { encoding: 'utf8' })
+        return true
+    }
+    rcContent.validateRemain -= 1
+    fs.writeFileSync(rcPath, JSON.stringify(rcContent, null, 2), { encoding: 'utf8' })
+    return false
+}
 
 const getNpmMirror = () => {
     try {
@@ -29,8 +69,8 @@ const getLocalMessage = (packageName: string, latestVersion: string, originMessa
     ).replace('__L_T_VER__', latestVersion)
 }
 
-
-export const updateNotice = async (packagePath: string, message?: string) => {
+export const updateNotice = async (packagePath: string, rcPath: string, message?: string) => {
+    if (!checkShouldUpdate(rcPath)) return false
     try {
         const pkg = require(packagePath)
         const localVersion = pkg.version

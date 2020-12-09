@@ -5,10 +5,13 @@ import { askQuestions } from './question';
 import { updateNotice } from "./update";
 const rcfile = require('rcfile')
 const path = require('path')
+const os = require('os')
+const fs = require('fs')
 const pkgJsonPath = path.join(process.cwd(), 'package.json')
+const updateRcPath = path.join(os.homedir(), '.bfrc')
 
 export async function performFormat(directoryPath: string) {
-    await updateNotice(pkgJsonPath)
+    await updateNotice(pkgJsonPath, updateRcPath)
     /** subFolderName */
     const defaultSubPackage = directoryPath.split('/').pop()
     /** rcPath */
@@ -30,7 +33,7 @@ export async function performFormat(directoryPath: string) {
 
 
 export async function isCurrentBranchValid(directoryPath: string) {
-    await updateNotice(pkgJsonPath)
+    await updateNotice(pkgJsonPath, updateRcPath)
     /** rcPath */
     const rcConfig = rcfile('branchformat', {
         cwd: directoryPath,
