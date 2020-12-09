@@ -68,8 +68,8 @@
     "typescript": "^4.0.2"
   },
   "config": {
-    "changelog": "跳过的分支配置提供默认值，避免运行报错",
-    "enchangelog": "Provide defaultValues to skipBranch configs to avoid runtimeErrors",
+    "changelog": "修复 packageName 显示不完全问题",
+    "enchangelog": "Fix problem of packageName display partially",
     "commitizen": {
       "path": "./node_modules/cz-customizable"
     },

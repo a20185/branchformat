@@ -67,7 +67,7 @@ const getLocalMessage = (packageName: string, latestVersion: string, originMessa
     return (
         originMessage ||
         D.UPDATE_HINT
-    ).replace('__L_T_VER__', latestVersion).replace('__PKG_NAME__', packageName)
+    ).replace('__L_T_VER__', latestVersion).replace(/__PKG_NAME__/g, packageName)
 }
 
 const getUpdateLogs = (npmData: any, currentVersion: string, latestVersion: string) => {
