@@ -43,7 +43,7 @@ const unifyConfigs = (item: OptionItem[]): OptionItem[] => {
     })
 }
 
-const BRANCH_CONFIG = [
+export const BRANCH_CONFIG = [
     {
         name: 'type',
         type: 'list',

@@ -11,11 +11,14 @@
     "checkout": "node bin/checkout"
   },
   "bin": {
-    "bfinit": "./postinstall.js"
+    "bfinit": "./postinstall.js",
+    "bfeject": "./eject.js"
   },
   "files": [
     "package.json",
     "postinstall.js",
+    "eject.js",
+    "branchformat.config.js",
     "babel-config.js",
     "test.js",
     "dist",
@@ -66,6 +69,7 @@
   },
   "config": {
     "changelogs": {
+      "0.0.18": "加入 branchformat 默认配置弹出脚本，使用 yarn bfeject 即可弹出默认配置",
       "0.0.17": "减少版本更新检测的次数，默认设置为每使用 20 次后才进行检测尝试",
       "0.0.16": "修复 branchverify 验证分支不合法后不终止进程的问题"
     },
