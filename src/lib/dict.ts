@@ -1,6 +1,8 @@
-const lang = process.env.LANG?.startsWith('zh') ? 'zh' : 'en'
+export const lang = process.env.LANG?.startsWith('zh') ? 'zh' : 'en'
 
 const ZH_DICT = {
+    UPDATE_CLOG: '更新内容如下：',
+    UPDATE_HINT: '__PKG_NAME__ 新版本 __L_T_VER__ 已经发布, 运行以下命令，立即更新到最新版吧 \n\nnpm i __PKG_NAME__ -D \nyarn add __PKG_NAME__ --dev',
     CONFIG_TTLE: '分支切出助手（任意输入项填入「no」将等同于不填写）',
     CONFIG_DEFH: '请输入 __ITM_NAME__ :',
     CONFIG_DESC: '请输入需求/修复的相关描述（建议小于 30 字）：',
@@ -23,6 +25,8 @@ const ZH_DICT = {
 }
 
 const EN_DICT = {
+    UPDATE_CLOG: 'Version update brought changes as below: ',
+    UPDATE_HINT: 'Version __L_T_VER__ of __PKG_NAME__ is out, run the following command for upgrade \n\nnpm i __PKG_NAME__ -D \nyarn add __PKG_NAME__ --dev',
     CONFIG_TTLE: 'Branch format switcher (Input \'no\' at any input term will erase the result)',
     CONFIG_DEFH: 'Input __ITM_NAME__ :',
     CONFIG_DESC: 'Brief descriptions (less than 30 letters) :',

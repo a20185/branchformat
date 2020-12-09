@@ -1,4 +1,5 @@
 import { fetchData } from "./lib/http"
+import { D, lang } from './lib/dict'
 import { prerelease, gt, lte } from 'semver'
 const Chalk = require('chalk')
 const Shell = require('shelljs')
@@ -65,8 +66,8 @@ const getProperNpmListPath = (packageName: string): string => {
 const getLocalMessage = (packageName: string, latestVersion: string, originMessage?: string): string => {
     return (
         originMessage ||
-        `${packageName} 新版本 __L_T_VER__ 已经发布, 运行以下命令，立即更新到最新版吧 \n\nnpm i ${packageName} -D \nyarn add ${packageName} --dev`
-    ).replace('__L_T_VER__', latestVersion)
+        D.UPDATE_HINT
+    ).replace('__L_T_VER__', latestVersion).replace('__PKG_NAME__', packageName)
 }
 
 const getUpdateLogs = (npmData: any, currentVersion: string, latestVersion: string) => {
@@ -88,7 +89,9 @@ const getUpdateLogs = (npmData: any, currentVersion: string, latestVersion: stri
         .sort((versionA, versionB) => lte(versionA, versionB) ? -1 : 1)
     /** output version changelogs */
     return upcomingVersions.map(version => {
-        const changelog = npmData.versions?.[version]?.config.changelog
+        const changelog = lang === 'zh'
+            ? npmData.versions?.[version]?.config.changelog
+            : npmData.versions?.[version]?.config.enchangelog
         if (changelog) {
             return `[${version}]: ${changelog}`
         }
@@ -115,7 +118,7 @@ export const updateNotice = async (packagePath: string, rcPath: string, message?
             console.log(Chalk.green(displayMessage))
             if (changelogs) {
                 console.log()
-                console.log(Chalk.cyan('变更记录如下：'))
+                console.log(Chalk.cyan(D.UPDATE_CLOG))
                 console.log(Chalk.white(changelogs))
             }
             console.log()
