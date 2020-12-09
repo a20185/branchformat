@@ -1,5 +1,5 @@
 import { fetchData } from "./lib/http"
-import { prerelease, gt } from 'semver'
+import { prerelease, gt, lte } from 'semver'
 const Chalk = require('chalk')
 const Shell = require('shelljs')
 const fs = require('fs')
@@ -69,6 +69,33 @@ const getLocalMessage = (packageName: string, latestVersion: string, originMessa
     ).replace('__L_T_VER__', latestVersion)
 }
 
+const getUpdateLogs = (npmData: any, currentVersion: string, latestVersion: string) => {
+    if (prerelease(currentVersion) || !gt(latestVersion, currentVersion)) {
+        return ''
+    }
+    /** parse version lists */
+    const upcomingVersions = (Object.keys(npmData.versions || {}) as string[])
+        .filter(incomingVersion =>
+            Boolean(
+                /** not prerelease */
+                !prerelease(incomingVersion) &&
+                /** larger than currentVersion */
+                gt(incomingVersion, currentVersion) &&
+                /** less or equal to latestVersion */
+                lte(incomingVersion, latestVersion)
+            )
+        )
+        .sort((versionA, versionB) => lte(versionA, versionB) ? -1 : 1)
+    /** output version changelogs */
+    return upcomingVersions.map(version => {
+        const changelog = npmData.versions?.[version]?.config.changelog
+        if (changelog) {
+            return `[${version}]: ${changelog}`
+        }
+        return ''
+    }).filter(Boolean).join('\n')
+}
+
 export const updateNotice = async (packagePath: string, rcPath: string, message?: string) => {
     if (!checkShouldUpdate(rcPath)) return false
     try {
@@ -84,7 +111,13 @@ export const updateNotice = async (packagePath: string, rcPath: string, message?
         /** Only build notice when latestVersion is greater than localVersion */
         if (gt(latestVersion, localVersion)) {
             const displayMessage = getLocalMessage(pkg.name ,latestVersion, message)
+            const changelogs = getUpdateLogs(npmData, localVersion, latestVersion)
             console.log(Chalk.green(displayMessage))
+            if (changelogs) {
+                console.log()
+                console.log(Chalk.cyan('变更记录如下：'))
+                console.log(Chalk.white(changelogs))
+            }
             console.log()
             return {
                 message: displayMessage,
