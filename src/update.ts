@@ -65,7 +65,7 @@ const getProperNpmListPath = (packageName: string): string => {
 const getLocalMessage = (packageName: string, latestVersion: string, originMessage?: string): string => {
     return (
         originMessage ||
-        `${packageName} 新版本 __L_T_VER__ 已经发布, 运行以下命令，立即更新到最新版吧 \n\nnpm i ${packageName} -D \nyarn add ${packageName} \n --dev`
+        `${packageName} 新版本 __L_T_VER__ 已经发布, 运行以下命令，立即更新到最新版吧 \n\nnpm i ${packageName} -D \nyarn add ${packageName} --dev`
     ).replace('__L_T_VER__', latestVersion)
 }
 

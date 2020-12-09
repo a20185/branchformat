@@ -7,7 +7,7 @@ const rcfile = require('rcfile')
 const path = require('path')
 const os = require('os')
 const fs = require('fs')
-const pkgJsonPath = path.join(process.cwd(), 'package.json')
+const pkgJsonPath = path.join('..', 'package.json')
 const updateRcPath = path.join(os.homedir(), '.bfrc')
 
 export async function performFormat(directoryPath: string) {
