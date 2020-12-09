@@ -14,7 +14,8 @@ performFormat(process.cwd())
 var verifyTemplate = `const { isCurrentBranchValid } = require('@nibfe/branchformat')
 isCurrentBranchValid(process.cwd()).then(result => {
     if (!result) {
-        throw new Error('分支不合法，请使用 \`yarn checkout\` 切出分支!')
+        console.log('分支不合法，请使用 \`yarn checkout\` 切出分支!')
+        process.exit(1)
     }
 })
 `
