@@ -12,7 +12,7 @@ interface BranchFormatRcType {
 
 const isRcValid = (rcFile: any): rcFile is BranchFormatRcType => {
     if (!rcFile) return false
-    if (!rcFile.validateRemain || !Number.isInteger(rcFile.validateRemain)) return false
+    if (!Number.isInteger(rcFile.validateRemain)) return false
     return true
 }
 
