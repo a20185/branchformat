@@ -9,7 +9,7 @@ const getParsingPhases = (config: readonly OptionItem[]) => {
     return config.slice(0, -1)
 }
 
-export const isBranchShouldParse = (branch: string, skipBranch: string[]) => {
+export const isBranchShouldParse = (branch: string, skipBranch: string[] = defaultSkipbranch) => {
     if (skipBranch.find((current) => (new RegExp(current)).test(branch))) {
         return false
     }
