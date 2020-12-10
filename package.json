@@ -1,6 +1,6 @@
 {
   "name": "branchformat",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "⚙ A simple util to help quick checkout or switch branches that correspond to team regulations",
   "main": "dist/index.common.js",
   "module": "dist/index.esm.js",
@@ -69,8 +69,8 @@
     "typescript": "^4.0.2"
   },
   "config": {
-    "changelog": "加入自动移除原始分支功能",
-    "enchangelog": "Add automatically source branch removal",
+    "changelog": "移除中文说明",
+    "enchangelog": "Remove Chinese descriptions in postinstall script",
     "commitizen": {
       "path": "./node_modules/cz-customizable"
     },

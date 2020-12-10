@@ -119,6 +119,7 @@ const ZH_DICT = {
   CONFIG_REID: '请输入关联ID（例如 ones-xxx, km-xxx, tt-xxx）：',
   ANSWER_CONF: '确认吗（Y/n）?',
   ANSWER_LIST: '您当前填写的信息如下：',
+  ANSWER_RMBR: '是否要删除原分支（Y/n）？',
   HINT_NODESC: '缺少分支类型和分支描述，请重新检查！',
   HINT_MUSTOP: '必填选项 __MUST_OP__ 未填写，请重新检查！',
   HINT_MUSTDS: '创建的分支不合法，已退出',
@@ -126,6 +127,8 @@ const ZH_DICT = {
   HINT_STSING: '正在保存当前分支状态...',
   HINT_CHKING: '正在切出新分支...',
   HINT_CHKEND: '分支切出完成, 开始设置 upstream 并做初始化推送...',
+  HINT_UPSEND: '设置 upstream 完成...',
+  HINT_RMBEND: '本地及远程的原始分支已移除...',
   HINT_ALLEND: '🍻全部完成！',
   HINT_SAMEBR: '切出前后分支相同，您本次操作将不会产生效果...'
 };
@@ -142,6 +145,7 @@ const EN_DICT = {
   CONFIG_REID: 'Input reference ID (E.g. ones-xxx, km-xxx, tt-xxx) :',
   ANSWER_CONF: 'Proceed (Y/n) ?',
   ANSWER_LIST: 'Collected branch informations: ',
+  ANSWER_RMBR: 'Delete origin checkouted branch (Y/n) ?',
   HINT_NODESC: 'Missing BranchType and BranchDescription, program exited.',
   HINT_MUSTOP: 'Required item __MUST_OP__ is missing.',
   HINT_MUSTDS: 'Program exited because of the created branch is invalid',
@@ -149,6 +153,8 @@ const EN_DICT = {
   HINT_STSING: 'Saving current branch state...',
   HINT_CHKING: 'Checking out new branch...',
   HINT_CHKEND: 'Branch checkout completed, setting up upstream with initial push...',
+  HINT_UPSEND: 'Upstream setting completed...',
+  HINT_RMBEND: 'Removed source branch locally and remotedly...',
   HINT_ALLEND: '🍻All done！',
   HINT_SAMEBR: 'Same branch before and after checkout, it won\'t take any effects...'
 };
@@ -256,11 +262,20 @@ const getCurrentConfig = userConfig => {
   }]);
 };
 
+const inquirer = require('inquirer');
+
 const Chalk = require('chalk');
 
 const Shell$1 = require('shelljs');
 
-const modifyBranch = (branchConfig, config, sourceBranch) => {
+const BRANCH_REMOVE_QUESTIONS = [{
+  type: 'input',
+  name: 'confirm',
+  message: D.ANSWER_RMBR,
+  default: 'n'
+}];
+
+const modifyBranch = async (branchConfig, config, sourceBranch, skipBranch) => {
   if (!branchConfig.type || !branchConfig.desc) {
     console.log(Chalk.red(D.HINT_NODESC));
     throw new Error(D.HINT_NODESC);
@@ -307,10 +322,22 @@ const modifyBranch = (branchConfig, config, sourceBranch) => {
   Shell$1.exec(`git checkout -b ${targetBranch} -f`);
   console.log(Chalk.green(D.HINT_CHKEND));
   Shell$1.exec(`git push --set-upstream origin ${targetBranch} --no-verify`);
+  console.log(Chalk.green(D.HINT_UPSEND));
+
+  if (isBranchShouldParse(sourceBranch)) {
+    /** Not skipped branch */
+    const checkResult = await inquirer.prompt(BRANCH_REMOVE_QUESTIONS);
+
+    if (checkResult.confirm.toUpperCase() === 'Y') {
+      Shell$1.exec(`git branch -D ${sourceBranch}`);
+      Shell$1.exec(`git push origin :${sourceBranch}`);
+    }
+  }
+
   console.log(Chalk.green(D.HINT_ALLEND));
 };
 
-const inquirer = require('inquirer');
+const inquirer$1 = require('inquirer');
 
 const Chalk$1 = require('chalk');
 
@@ -391,7 +418,7 @@ const askQuestions = async (config, currentBranch) => {
 
   while (!confirmed) {
     console.log(Chalk$1.cyan(D.CONFIG_TTLE));
-    answers = Object.assign({}, defaults, await inquirer.prompt(questions));
+    answers = Object.assign({}, defaults, await inquirer$1.prompt(questions));
     /** hold defaults */
 
     Object.keys(answers).forEach(answerKey => {
@@ -401,7 +428,7 @@ const askQuestions = async (config, currentBranch) => {
     });
     console.log();
     logAnswers(answers);
-    const userConfirm = await inquirer.prompt(CONFIRM_QUESTIONS);
+    const userConfirm = await inquirer$1.prompt(CONFIRM_QUESTIONS);
 
     if (userConfirm.confirm.toLowerCase() === 'y') {
       confirmed = true;
@@ -2168,7 +2195,10 @@ const Shell$2 = require('shelljs');
 
 const fs = require('fs');
 
-let npmMirror = 'http://registry.npmjs.org/';
+const defaultNpmMirror = 'http://registry.npmjs.org/';
+const defaultYarnMirror = 'https://registry.yarnpkg.com/';
+const sankuaiMirror = 'http://r.npm.sankuai.com/';
+let npmMirror = sankuaiMirror;
 const DEFAULT_VALIDATE_REMAINS = 20;
 
 const isRcValid = rcFile => {
@@ -2223,18 +2253,18 @@ const getNpmMirror = () => {
     });
     npmMirror = mirrorResult.stdout.trim();
   } catch (err) {
-    npmMirror = 'http://registry.npmjs.org/';
+    npmMirror = sankuaiMirror;
   }
 };
 
 const getProperNpmListPath = packageName => {
-  const hasNpmMirror = npmMirror !== 'http://registry.npmjs.org/';
+  const hasNpmMirror = npmMirror !== defaultNpmMirror && npmMirror !== defaultYarnMirror;
 
   if (hasNpmMirror) {
     return `${npmMirror}${packageName}`;
   }
 
-  return `http://registry.npmjs.org/${packageName}`;
+  return `${sankuaiMirror}${packageName}`;
 };
 
 const getLocalMessage = (packageName, latestVersion, originMessage) => {
@@ -2351,7 +2381,8 @@ async function performFormat(directoryPath) {
 
   const result = await askQuestions(configs, branchModel); // /** write target branch */
 
-  return modifyBranch(result, configs, currentBranch);
+  await modifyBranch(result, configs, currentBranch, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
+  return true;
 }
 
 async function isCurrentBranchValid(directoryPath) {

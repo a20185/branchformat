@@ -14,7 +14,7 @@ performFormat(process.cwd())
 var verifyTemplate = `const { isCurrentBranchValid } = require('@nibfe/branchformat')
 isCurrentBranchValid(process.cwd()).then(result => {
     if (!result) {
-        console.log('分支不合法，请使用 \`yarn checkout\` 切出分支!')
+        console.log('Your current branch is invalid.Use \`yarn checkout\` instead!')
         process.exit(1)
     }
 })
@@ -26,7 +26,7 @@ if (!fs.existsSync(checkoutFile)) {
         fs.mkdirSync(binDirectory)
     }
     fs.writeFileSync(checkoutFile, checkoutTemplate, { encoding: 'utf8' })
-    console.log('分支切出脚本已添加到 bin/checkout...')
+    console.log('Branch checkout script has been successfully added to bin/checkout...')
 }
 
 if (!fs.existsSync(verifyFile)) {
@@ -34,28 +34,28 @@ if (!fs.existsSync(verifyFile)) {
         fs.mkdirSync(binDirectory)
     }
     fs.writeFileSync(verifyFile, verifyTemplate, { encoding: 'utf8' })
-    console.log('分支检测脚本已添加到 bin/branchverify...')
+    console.log('Branch validate script has been successfully added to bin/branchverify...')
 }
 
 
 var pkgFile = require(targetPackageJson)
 if (pkgFile.scripts && pkgFile.scripts.checkout) {
-    console.log('当前已存在 checkout npm 命令，暂不做处理...')
+    console.log('Checkout is existed in npm scripts, not adding npm checkout script...')
 } else {
     if (!pkgFile.scripts) pkgFile.scripts = {}
     if (!pkgFile.scripts.checkout) {
         pkgFile.scripts.checkout = 'node bin/checkout'
     }
-    console.log('已添加 checkout npm 命令，使用 yarn checkout / npm checkout 即可体验...')
+    console.log('Added npm checkout script，try using yarn checkout / npm run checkout...')
 }
 if (pkgFile.scripts && pkgFile.scripts.brverify) {
-    console.log('当前已存在 brverify npm 命令，暂不做处理...')
+    console.log('Brverify is existed in npm scripts, not adding npm brverify script...')
 } else {
     if (!pkgFile.scripts) pkgFile.scripts = {}
     if (!pkgFile.scripts.brverify) {
         pkgFile.scripts.brverify = 'node bin/branchverify'
     }
-    console.log('已添加 brverify npm 命令，使用 yarn brverify / npm brverify 即可体验...')
+    console.log('Added npm checkout script，try using yarn brverify / npm run brverify...')
 }
 fs.writeFileSync(targetPackageJson, JSON.stringify(pkgFile, null, 2), { encoding: "utf8" })
-console.log('全部完成')
+console.log('All done!')
