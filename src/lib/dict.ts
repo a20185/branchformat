@@ -13,6 +13,7 @@ const ZH_DICT = {
     CONFIG_REID: '请输入关联ID（例如 ones-xxx, km-xxx, tt-xxx）：',
     ANSWER_CONF: '确认吗（Y/n）?',
     ANSWER_LIST: '您当前填写的信息如下：',
+    ANSWER_RMBR: '是否要删除原分支（Y/n）？',
     HINT_NODESC: '缺少分支类型和分支描述，请重新检查！',
     HINT_MUSTOP: '必填选项 __MUST_OP__ 未填写，请重新检查！',
     HINT_MUSTDS: '创建的分支不合法，已退出',
@@ -20,6 +21,8 @@ const ZH_DICT = {
     HINT_STSING: '正在保存当前分支状态...',
     HINT_CHKING: '正在切出新分支...',
     HINT_CHKEND: '分支切出完成, 开始设置 upstream 并做初始化推送...',
+    HINT_UPSEND: '设置 upstream 完成...',
+    HINT_RMBEND: '本地及远程的原始分支已移除...',
     HINT_ALLEND: '🍻全部完成！',
     HINT_SAMEBR: '切出前后分支相同，您本次操作将不会产生效果...'
 }
@@ -37,6 +40,7 @@ const EN_DICT = {
     CONFIG_REID: 'Input reference ID (E.g. ones-xxx, km-xxx, tt-xxx) :',
     ANSWER_CONF: 'Proceed (Y/n) ?',
     ANSWER_LIST: 'Collected branch informations: ',
+    ANSWER_RMBR: 'Delete origin checkouted branch (Y/n) ?',
     HINT_NODESC: 'Missing BranchType and BranchDescription, program exited.',
     HINT_MUSTOP: 'Required item __MUST_OP__ is missing.',
     HINT_MUSTDS: 'Program exited because of the created branch is invalid',
@@ -44,6 +48,8 @@ const EN_DICT = {
     HINT_STSING: 'Saving current branch state...',
     HINT_CHKING: 'Checking out new branch...',
     HINT_CHKEND: 'Branch checkout completed, setting up upstream with initial push...',
+    HINT_UPSEND: 'Upstream setting completed...',
+    HINT_RMBEND: 'Removed source branch locally and remotedly...',
     HINT_ALLEND: '🍻All done！',
     HINT_SAMEBR: 'Same branch before and after checkout, it won\'t take any effects...'
 }

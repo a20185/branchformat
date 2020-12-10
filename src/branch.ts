@@ -2,7 +2,7 @@ import { OptionItem } from './config'
 import { BranchAnswers } from './question'
 const Shell = require('shelljs')
 
-const defaultSkipbranch = ['master', 'staging']
+export const defaultSkipbranch = ['master', 'staging']
 
 const getParsingPhases = (config: readonly OptionItem[]) => {
     /** Final not use */
@@ -56,7 +56,6 @@ export const parseExistedBranch = (currentBranch: string, config: readonly Optio
           break
         }
       }
-  
       if (matchResult && targetIndex < parsingPhases.length) {
         /** 匹配上了，记录，然后更新 */
         parseResult[parsingPhases[targetIndex].name] = matchResult[1]

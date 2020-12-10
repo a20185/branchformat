@@ -4,7 +4,10 @@ import { prerelease, gt, lte } from 'semver'
 const Chalk = require('chalk')
 const Shell = require('shelljs')
 const fs = require('fs')
-let npmMirror = 'http://registry.npmjs.org/'
+const defaultNpmMirror = 'http://registry.npmjs.org/'
+const defaultYarnMirror = 'https://registry.yarnpkg.com/'
+const sankuaiMirror = 'http://r.npm.sankuai.com/'
+let npmMirror = sankuaiMirror
 const DEFAULT_VALIDATE_REMAINS = 20
 
 interface BranchFormatRcType {
@@ -51,16 +54,18 @@ const getNpmMirror = () => {
         const mirrorResult = Shell.exec('npm config get registry', { silent: true })
         npmMirror = mirrorResult.stdout.trim()
     } catch (err) {
-        npmMirror = 'http://registry.npmjs.org/'
+        npmMirror = sankuaiMirror
     }
 }
 
 const getProperNpmListPath = (packageName: string): string => {
-    const hasNpmMirror = npmMirror !== 'http://registry.npmjs.org/'
+    const hasNpmMirror =
+        npmMirror !== defaultNpmMirror &&
+        npmMirror !== defaultYarnMirror
     if (hasNpmMirror) {
         return `${npmMirror}${packageName}`
     }
-    return `http://registry.npmjs.org/${packageName}`
+    return `${sankuaiMirror}${packageName}`
 }
 
 const getLocalMessage = (packageName: string, latestVersion: string, originMessage?: string): string => {

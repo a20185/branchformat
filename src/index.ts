@@ -28,7 +28,8 @@ export async function performFormat(directoryPath: string) {
     /** prepare questions */
     const result = await askQuestions(configs, branchModel)
     // /** write target branch */
-    return modifyBranch(result, configs, currentBranch)
+    await modifyBranch(result, configs, currentBranch, rcConfig?.skip)
+    return true
 }
 
 

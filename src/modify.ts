@@ -1,10 +1,21 @@
+import { isBranchShouldParse } from './branch'
 import { OptionItem } from './config'
 import { D } from './lib/dict'
 import { BranchAnswers } from "./question"
+const inquirer = require('inquirer')
 const Chalk = require('chalk')
 const Shell = require('shelljs')
 
-export const modifyBranch = (branchConfig: Partial<BranchAnswers>, config: readonly OptionItem[], sourceBranch: string) => {
+const BRANCH_REMOVE_QUESTIONS = [
+    {
+        type: 'input',
+        name: 'confirm',
+        message: D.ANSWER_RMBR,
+        default: 'n'
+    }
+]
+
+export const modifyBranch = async (branchConfig: Partial<BranchAnswers>, config: readonly OptionItem[], sourceBranch: string, skipBranch: string[]) => {
     if (!branchConfig.type || !branchConfig.desc) {
         console.log(Chalk.red(D.HINT_NODESC))
         throw new Error(D.HINT_NODESC)
@@ -41,5 +52,15 @@ export const modifyBranch = (branchConfig: Partial<BranchAnswers>, config: reado
     Shell.exec(`git checkout -b ${targetBranch} -f`)
     console.log(Chalk.green(D.HINT_CHKEND))
     Shell.exec(`git push --set-upstream origin ${targetBranch} --no-verify`)
+    console.log(Chalk.green(D.HINT_UPSEND))
+    if (isBranchShouldParse(sourceBranch)) {
+        /** Not skipped branch */
+        const checkResult = await inquirer.prompt(BRANCH_REMOVE_QUESTIONS)
+        if (checkResult.confirm.toUpperCase() === 'Y') {
+            Shell.exec(`git branch -D ${sourceBranch}`)
+            Shell.exec(`git push origin :${sourceBranch}`)
+
+        }
+    }
     console.log(Chalk.green(D.HINT_ALLEND))
 }
