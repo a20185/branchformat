@@ -32,7 +32,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     return config.slice(0, -1);
   };
 
-  const isBranchShouldParse = (branch, skipBranch) => {
+  const isBranchShouldParse = (branch, skipBranch = defaultSkipbranch) => {
     if (skipBranch.find(current => new RegExp(current).test(branch))) {
       return false;
     }
@@ -106,6 +106,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
   const lang = (_process$env$LANG = process.env.LANG) !== null && _process$env$LANG !== void 0 && _process$env$LANG.startsWith('zh') ? 'zh' : 'en';
   const ZH_DICT = {
+    UPDATE_CLOG: '更新内容如下：',
+    UPDATE_HINT: '__PKG_NAME__ 新版本 __L_T_VER__ 已经发布, 运行以下命令，立即更新到最新版吧 \n\nnpm i __PKG_NAME__ -D \nyarn add __PKG_NAME__ --dev',
     CONFIG_TTLE: '分支切出助手（任意输入项填入「no」将等同于不填写）',
     CONFIG_DEFH: '请输入 __ITM_NAME__ :',
     CONFIG_DESC: '请输入需求/修复的相关描述（建议小于 30 字）：',
@@ -127,6 +129,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     HINT_SAMEBR: '切出前后分支相同，您本次操作将不会产生效果...'
   };
   const EN_DICT = {
+    UPDATE_CLOG: 'Version update brought changes as below: ',
+    UPDATE_HINT: 'Version __L_T_VER__ of __PKG_NAME__ is out, run the following command for upgrade \n\nnpm i __PKG_NAME__ -D \nyarn add __PKG_NAME__ --dev',
     CONFIG_TTLE: 'Branch format switcher (Input \'no\' at any input term will erase the result)',
     CONFIG_DEFH: 'Input __ITM_NAME__ :',
     CONFIG_DESC: 'Brief descriptions (less than 30 letters) :',
@@ -2155,12 +2159,61 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   };
   var semver_16 = semver$1.prerelease;
   var semver_23 = semver$1.gt;
+  var semver_28 = semver$1.lte;
 
   const Chalk$2 = require('chalk');
 
   const Shell$2 = require('shelljs');
 
+  const fs = require('fs');
+
   let npmMirror = 'http://registry.npmjs.org/';
+  const DEFAULT_VALIDATE_REMAINS = 20;
+
+  const isRcValid = rcFile => {
+    if (!rcFile) return false;
+    if (!Number.isInteger(rcFile.validateRemain)) return false;
+    return true;
+  };
+
+  const getRcContent = rcPath => {
+    const rcExists = fs.existsSync(rcPath);
+    const defaultRcResult = {
+      validateRemain: DEFAULT_VALIDATE_REMAINS
+    };
+
+    if (rcExists) {
+      try {
+        const rcContent = JSON.parse(fs.readFileSync(rcPath, {
+          encoding: 'utf8'
+        }));
+        if (isRcValid(rcContent)) return rcContent;
+        return defaultRcResult;
+      } catch (err) {
+        return defaultRcResult;
+      }
+    }
+
+    return defaultRcResult;
+  };
+
+  const checkShouldUpdate = rcPath => {
+    const rcContent = getRcContent(rcPath);
+
+    if (rcContent.validateRemain === 0) {
+      rcContent.validateRemain = DEFAULT_VALIDATE_REMAINS;
+      fs.writeFileSync(rcPath, JSON.stringify(rcContent, null, 2), {
+        encoding: 'utf8'
+      });
+      return true;
+    }
+
+    rcContent.validateRemain -= 1;
+    fs.writeFileSync(rcPath, JSON.stringify(rcContent, null, 2), {
+      encoding: 'utf8'
+    });
+    return false;
+  };
 
   const getNpmMirror = () => {
     try {
@@ -2184,10 +2237,41 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   };
 
   const getLocalMessage = (packageName, latestVersion, originMessage) => {
-    return (originMessage || `${packageName} 新版本 __L_T_VER__ 已经发布, 运行以下命令，立即更新到最新版吧 \n\nnpm i ${packageName} -D \nyarn add ${packageName} \n --dev`).replace('__L_T_VER__', latestVersion);
+    return (originMessage || D.UPDATE_HINT).replace('__L_T_VER__', latestVersion).replace(/__PKG_NAME__/g, packageName);
   };
 
-  const updateNotice = async (packagePath, message) => {
+  const getUpdateLogs = (npmData, currentVersion, latestVersion) => {
+    if (semver_16(currentVersion) || !semver_23(latestVersion, currentVersion)) {
+      return '';
+    }
+    /** parse version lists */
+
+
+    const upcomingVersions = Object.keys(npmData.versions || {}).filter(incomingVersion => Boolean(
+    /** not prerelease */
+    !semver_16(incomingVersion) &&
+    /** larger than currentVersion */
+    semver_23(incomingVersion, currentVersion) &&
+    /** less or equal to latestVersion */
+    semver_28(incomingVersion, latestVersion))).sort((versionA, versionB) => semver_28(versionA, versionB) ? -1 : 1);
+    /** output version changelogs */
+
+    return upcomingVersions.map(version => {
+      var _npmData$versions, _npmData$versions$ver, _npmData$versions2, _npmData$versions2$ve;
+
+      const changelog = lang === 'zh' ? (_npmData$versions = npmData.versions) === null || _npmData$versions === void 0 ? void 0 : (_npmData$versions$ver = _npmData$versions[version]) === null || _npmData$versions$ver === void 0 ? void 0 : _npmData$versions$ver.config.changelog : (_npmData$versions2 = npmData.versions) === null || _npmData$versions2 === void 0 ? void 0 : (_npmData$versions2$ve = _npmData$versions2[version]) === null || _npmData$versions2$ve === void 0 ? void 0 : _npmData$versions2$ve.config.enchangelog;
+
+      if (changelog) {
+        return `[${version}]: ${changelog}`;
+      }
+
+      return '';
+    }).filter(Boolean).join('\n');
+  };
+
+  const updateNotice = async (packagePath, rcPath, message) => {
+    if (!checkShouldUpdate(rcPath)) return false;
+
     try {
       var _npmData$distTags;
 
@@ -2207,7 +2291,15 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
       if (semver_23(latestVersion, localVersion)) {
         const displayMessage = getLocalMessage(pkg.name, latestVersion, message);
+        const changelogs = getUpdateLogs(npmData, localVersion, latestVersion);
         console.log(Chalk$2.green(displayMessage));
+
+        if (changelogs) {
+          console.log();
+          console.log(Chalk$2.cyan(D.UPDATE_CLOG));
+          console.log(Chalk$2.white(changelogs));
+        }
+
         console.log();
         return {
           message: displayMessage,
@@ -2226,12 +2318,17 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
   const path = require('path');
 
-  const pkgJsonPath = path.join(process.cwd(), 'package.json');
+  const os = require('os');
+
+  const fs$1 = require('fs');
+
+  const pkgJsonPath = path.join('..', 'package.json');
+  const updateRcPath = path.join(os.homedir(), '.bfrc');
 
   async function performFormat(directoryPath) {
     var _rcConfig$config;
 
-    await updateNotice(pkgJsonPath);
+    await updateNotice(pkgJsonPath, updateRcPath);
     /** subFolderName */
 
     const defaultSubPackage = directoryPath.split('/').pop();
@@ -2259,7 +2356,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   async function isCurrentBranchValid(directoryPath) {
     var _rcConfig$config2;
 
-    await updateNotice(pkgJsonPath);
+    await updateNotice(pkgJsonPath, updateRcPath);
     /** rcPath */
 
     const rcConfig = rcfile('branchformat', {

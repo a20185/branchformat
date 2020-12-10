@@ -1,6 +1,6 @@
 {
-  "name": "@nibfe/branchformat",
-  "version": "0.0.24",
+  "name": "branchformat",
+  "version": "0.0.26",
   "description": "⚙ A simple util to help quick checkout or switch branches that correspond to team regulations",
   "main": "dist/index.common.js",
   "module": "dist/index.esm.js",
@@ -15,6 +15,7 @@
     "bfeject": "./eject.js"
   },
   "files": [
+    "README.md",
     "package.json",
     "postinstall.js",
     "eject.js",
@@ -68,8 +69,8 @@
     "typescript": "^4.0.2"
   },
   "config": {
-    "changelog": "修复 packageName 显示不完全问题",
-    "enchangelog": "Fix problem of packageName display partially",
+    "changelog": "更新首个开源版本",
+    "enchangelog": "Release first open-source version",
     "commitizen": {
       "path": "./node_modules/cz-customizable"
     },
