@@ -11,7 +11,7 @@ Checking out from a skipped branch (e.g. `master`):
 
 
 Checking out from a previous branch which originally checkouted by BranchFormat
-![img2](./assets/checkoutexisted.gif)
+![img2](./assets/checkexisted.gif)
 
 
 ### Usage
