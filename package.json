@@ -1,6 +1,6 @@
 {
   "name": "branchformat",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "Souler Ou(ou@souler.cc)",
   "description": "⚙ A simple util to help quick checkout or switch branches that correspond to team regulations",
   "main": "dist/index.common.js",
