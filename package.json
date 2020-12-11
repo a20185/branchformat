@@ -1,9 +1,14 @@
 {
   "name": "branchformat",
-  "version": "1.0.2",
+  "version": "1.0.4",
+  "author": "Souler Ou(ou@souler.cc)",
   "description": "⚙ A simple util to help quick checkout or switch branches that correspond to team regulations",
   "main": "dist/index.common.js",
   "module": "dist/index.esm.js",
+  "repository": {
+    "url": "https://github.com/a20185/branchformat",
+    "type": "git"
+  },
   "scripts": {
     "test": "echo 'No test!'",
     "build": "rm -rf ./dist && rollup -c rollup.config.js",
@@ -21,9 +26,8 @@
     "eject.js",
     "branchformat.config.js",
     "babel-config.js",
-    "test.js",
-    "dist",
-    "src/templates"
+    "assets",
+    "dist"
   ],
   "keywords": [
     "branch",
@@ -35,7 +39,6 @@
     "standard",
     "regulation"
   ],
-  "author": "Souler Ou",
   "license": "MIT",
   "dependencies": {
     "chalk": "^4.1.0",
@@ -69,8 +72,8 @@
     "typescript": "^4.0.2"
   },
   "config": {
-    "changelog": "移除中文说明",
-    "enchangelog": "Remove Chinese descriptions in postinstall script",
+    "changelog": "更新示例 Demo 动画",
+    "enchangelog": "Update example demo gif in README",
     "commitizen": {
       "path": "./node_modules/cz-customizable"
     },

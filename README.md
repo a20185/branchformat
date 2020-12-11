@@ -4,6 +4,16 @@
 Branchformat is a simple util for rapid checkout and switch among branches.It aims to saving lives of checkouts and branch creations by using all-known presumptions of current environment as  defaultValues (By dynamically parse your current branch, your runtimeEnvs, and so on).
 
 
+### Demo
+
+Checking out from a skipped branch (e.g. `master`):
+![img1](./assets/checkout.gif)
+
+
+Checking out from a previous branch which originally checkouted by BranchFormat
+![img2](./assets/checkoutexisted.gif)
+
+
 ### Usage
 
 Install
