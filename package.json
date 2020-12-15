@@ -1,6 +1,6 @@
 {
   "name": "branchformat",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "author": "Souler Ou(ou@souler.cc)",
   "description": "⚙ A simple util to help quick checkout or switch branches that correspond to team regulations",
   "main": "dist/index.common.js",
@@ -72,8 +72,8 @@
     "typescript": "^4.0.2"
   },
   "config": {
-    "changelog": "更新示例 Demo 动画",
-    "enchangelog": "Update example demo gif in README",
+    "changelog": "降级 Chalk 与 Semver 以兼容 Node 8",
+    "enchangelog": "Downgrade chalk and semver for compatible with node 8",
     "commitizen": {
       "path": "./node_modules/cz-customizable"
     },
