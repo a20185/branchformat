@@ -1,6 +1,6 @@
 import { fetchData } from "./lib/http"
 import { D, lang } from './lib/dict'
-import { prerelease, gt, lte } from 'semver'
+const Semver = require('semver')
 const Chalk = require('chalk')
 const Shell = require('shelljs')
 const fs = require('fs')
@@ -76,7 +76,7 @@ const getLocalMessage = (packageName: string, latestVersion: string, originMessa
 }
 
 const getUpdateLogs = (npmData: any, currentVersion: string, latestVersion: string) => {
-    if (prerelease(currentVersion) || !gt(latestVersion, currentVersion)) {
+    if (Semver.prerelease(currentVersion) || !Semver.gt(latestVersion, currentVersion)) {
         return ''
     }
     /** parse version lists */
@@ -84,14 +84,14 @@ const getUpdateLogs = (npmData: any, currentVersion: string, latestVersion: stri
         .filter(incomingVersion =>
             Boolean(
                 /** not prerelease */
-                !prerelease(incomingVersion) &&
+                !Semver.prerelease(incomingVersion) &&
                 /** larger than currentVersion */
-                gt(incomingVersion, currentVersion) &&
+                Semver.gt(incomingVersion, currentVersion) &&
                 /** less or equal to latestVersion */
-                lte(incomingVersion, latestVersion)
+                Semver.lte(incomingVersion, latestVersion)
             )
         )
-        .sort((versionA, versionB) => lte(versionA, versionB) ? -1 : 1)
+        .sort((versionA, versionB) => Semver.lte(versionA, versionB) ? -1 : 1)
     /** output version changelogs */
     return upcomingVersions.map(version => {
         const changelog = lang === 'zh'
@@ -115,9 +115,9 @@ export const updateNotice = async (packagePath: string, rcPath: string, message?
         const latestVersion = npmData['dist-tags']?.latest
         if (!latestVersion || latestVersion === localVersion) return false
         /** Do nothing if user uses prerelease versions */
-        if (prerelease(localVersion)) return false
+        if (Semver.prerelease(localVersion)) return false
         /** Only build notice when latestVersion is greater than localVersion */
-        if (gt(latestVersion, localVersion)) {
+        if (Semver.gt(latestVersion, localVersion)) {
             const displayMessage = getLocalMessage(pkg.name ,latestVersion, message)
             const changelogs = getUpdateLogs(npmData, localVersion, latestVersion)
             console.log(Chalk.green(displayMessage))
