@@ -1,6 +1,6 @@
 {
   "name": "branchformat",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "Souler Ou(ou@souler.cc)",
   "description": "⚙ A simple util to help quick checkout or switch branches that correspond to team regulations",
   "main": "dist/index.common.js",
@@ -16,8 +16,11 @@
     "checkout": "node bin/checkout"
   },
   "bin": {
-    "bfinit": "./postinstall.js",
-    "bfeject": "./eject.js"
+    "bfinit": "./bin/postinstall.js",
+    "bfeject": "./bin/eject.js",
+    "bfcheckout": "./bin/checkout.js",
+    "bfswitch": "./bin/switch.js",
+    "bfverify": "./bin/branchverify.js"
   },
   "files": [
     "README.md",
@@ -27,7 +30,8 @@
     "branchformat.config.js",
     "babel-config.js",
     "assets",
-    "dist"
+    "dist",
+    "bin"
   ],
   "keywords": [
     "branch",
@@ -66,7 +70,7 @@
     "typescript": "^4.0.2"
   },
   "config": {
-    "changelog": "提供新命令（yarn switch）以支持快速分支切出 [需重新 yarn bfinit]",
-    "enchangelog": "Provide new command (yarn switch) to support quick branch switch [Needs Redo `yarn bfinit`]"
+    "changelog": "提供 npx 可执行命令",
+    "enchangelog": "Provide npx compatible commands"
   }
 }
