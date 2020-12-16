@@ -1,6 +1,6 @@
 {
   "name": "branchformat",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "author": "Souler Ou(ou@souler.cc)",
   "description": "⚙ A simple util to help quick checkout or switch branches that correspond to team regulations",
   "main": "dist/index.common.js",
@@ -44,6 +44,7 @@
     "chalk": "3.0.0",
     "core-js": "^3.8.0",
     "inquirer": "7.2.0",
+    "inquirer-search-list": "^1.2.6",
     "rcfile": "^1.0.3",
     "semver": "7.0.0",
     "shelljs": "^0.8.4"
@@ -65,7 +66,7 @@
     "typescript": "^4.0.2"
   },
   "config": {
-    "changelog": "降级 Inquirer 以兼容 Node 8",
-    "enchangelog": "Downgrade inquirer for compatible with node 8"
+    "changelog": "提供新命令（yarn switch）以支持快速分支切出 [需重新 yarn bfinit]",
+    "enchangelog": "Provide new command (yarn switch) to support quick branch switch [Needs Redo `yarn bfinit`]"
   }
 }

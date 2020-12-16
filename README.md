@@ -32,8 +32,8 @@ npx bfinit
 
 
 Usage
-
 - Use `yarn run checkout` or `npm run checkout` for your git checkouts
+- Use `yarn run switch` or `npm run switch` for your repid git switch among branchs
 - Use `yarn run brverify` or `npm run brverify` for your git branch verifications
 
 

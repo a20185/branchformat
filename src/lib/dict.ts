@@ -24,7 +24,12 @@ const ZH_DICT = {
     HINT_UPSEND: '设置 upstream 完成...',
     HINT_RMBEND: '本地及远程的原始分支已移除...',
     HINT_ALLEND: '🍻全部完成！',
-    HINT_SAMEBR: '切出前后分支相同，您本次操作将不会产生效果...'
+    HINT_SAMEBR: '切出前后分支相同，您本次操作将不会产生效果...',
+    SWITCH_INTR: '分支切换助手',
+    SWITCH_SETR: '请输入关键字搜索分支, 方向键选择分支，回车执行分支切出...',
+    SWITCH_TTLE: '输入关键字：',
+    SWITCH_SUCC: '🍻 分支切换成功！',
+    SWITCH_FAIL: '❌ 分支切换失败，请选择分支！'
 }
 
 const EN_DICT = {
@@ -51,7 +56,12 @@ const EN_DICT = {
     HINT_UPSEND: 'Upstream setting completed...',
     HINT_RMBEND: 'Removed source branch locally and remotedly...',
     HINT_ALLEND: '🍻All done！',
-    HINT_SAMEBR: 'Same branch before and after checkout, it won\'t take any effects...'
+    HINT_SAMEBR: 'Same branch before and after checkout, it won\'t take any effects...',
+    SWITCH_INTR: 'Branch switch helper',
+    SWITCH_SETR: 'Input keyword for branch searching, arrow key for selection, enter to perform checkout...',
+    SWITCH_TTLE: 'Branch keyword: ',
+    SWITCH_SUCC: '🍻 Branch switched successfully！',
+    SWITCH_FAIL: '❌ Branch switch error, please make sure any branch has selected！'
 }
 
 
