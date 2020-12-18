@@ -1,6 +1,6 @@
 {
   "name": "branchformat",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Souler Ou(ou@souler.cc)",
   "description": "⚙ A simple util to help quick checkout or switch branches that correspond to team regulations",
   "main": "dist/index.common.js",
@@ -70,7 +70,7 @@
     "typescript": "^4.0.2"
   },
   "config": {
-    "changelog": "提供 npx 可执行命令",
-    "enchangelog": "Provide npx compatible commands"
+    "changelog": "修复 Eject 脚本问题",
+    "enchangelog": "Fix eject problem"
   }
 }

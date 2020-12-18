@@ -2,7 +2,7 @@
 var fs = require('fs')
 var path = require('path')
 var userDir = process.cwd()
-var defaultConfig = fs.readFileSync(path.join(__dirname, 'branchformat.config.js'), { encoding: 'utf8' })
+var defaultConfig = fs.readFileSync(path.join(__dirname, '..','branchformat.config.js'), { encoding: 'utf8' })
 var formatConfigPath = path.join(userDir, 'branchformat.config.js')
 
 if (fs.existsSync(formatConfigPath)) {
