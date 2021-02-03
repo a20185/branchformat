@@ -106,6 +106,7 @@ const ZH_DICT = {
   CONFIG_REID: '请输入关联ID（例如 ones-xxx, km-xxx, tt-xxx）：',
   ANSWER_CONF: '确认吗（Y/n）?',
   ANSWER_LIST: '您当前填写的信息如下：',
+  ANSWER_FAIL: '❌ 分支选项 __OPTION__ 不符合要求格式 __REQ_REG__，验证失败。(当前填写为 __VALUE__ )',
   ANSWER_RMBR: '是否要删除原分支（Y/n）？',
   HINT_NODESC: '缺少分支类型和分支描述，请重新检查！',
   HINT_MUSTOP: '必填选项 __MUST_OP__ 未填写，请重新检查！',
@@ -137,6 +138,7 @@ const EN_DICT = {
   CONFIG_REID: 'Input reference ID (E.g. ones-xxx, km-xxx, tt-xxx) :',
   ANSWER_CONF: 'Proceed (Y/n) ?',
   ANSWER_LIST: 'Collected branch informations: ',
+  ANSWER_FAIL: '❌ Inputed option `__OPTION__` fails to match required format __REQ_REG__ (Your current value `__VALUE__` )',
   ANSWER_RMBR: 'Delete origin checkouted branch (Y/n) ?',
   HINT_NODESC: 'Missing BranchType and BranchDescription, program exited.',
   HINT_MUSTOP: 'Required item __MUST_OP__ is missing.',
@@ -156,6 +158,8 @@ const EN_DICT = {
   SWITCH_FAIL: '❌ Branch switch error, please make sure any branch has selected！'
 };
 const D = lang === 'zh' ? ZH_DICT : EN_DICT;
+const STASHERROR_ZH = '没有要保存的本地修改';
+const STASHERROR_EN = 'No local changes to save';
 
 const unifyConfigs = item => {
   return item.map(config => {
@@ -271,8 +275,19 @@ const BRANCH_REMOVE_QUESTIONS = [{
   message: D.ANSWER_RMBR,
   default: 'n'
 }];
+/** 判断是否成功加入 stash */
+
+const hasStashedSuccessfully = stashOutput => {
+  if (stashOutput.indexOf(STASHERROR_EN) !== -1 || stashOutput.indexOf(STASHERROR_ZH) !== -1) {
+    return false;
+  }
+
+  return true;
+};
 
 const modifyBranch = async (branchConfig, config, sourceBranch, skipBranch) => {
+  var _stashOutput$stdout;
+
   if (!branchConfig.type || !branchConfig.desc) {
     console.log(Chalk.red(D.HINT_NODESC));
     throw new Error(D.HINT_NODESC);
@@ -312,9 +327,9 @@ const modifyBranch = async (branchConfig, config, sourceBranch, skipBranch) => {
   console.log();
   console.log(Chalk.green(D.HINT_PRECKO.replace('__TGT_BR__', targetBranch)));
   console.log(Chalk.white(D.HINT_STSING));
-  /** Stash changes */
+  /** Stash changes - including untracked files */
 
-  Shell$1.exec('git stash');
+  const stashOutput = Shell$1.exec('git stash --include-untracked');
   console.log(Chalk.white(D.HINT_CHKING));
   Shell$1.exec(`git checkout -b ${targetBranch} -f`);
   console.log(Chalk.green(D.HINT_CHKEND));
@@ -330,6 +345,12 @@ const modifyBranch = async (branchConfig, config, sourceBranch, skipBranch) => {
       Shell$1.exec(`git push origin :${sourceBranch}`);
     }
   }
+  /** Perform Stash pop if stashed successfully */
+
+
+  if (hasStashedSuccessfully(stashOutput === null || stashOutput === void 0 ? void 0 : (_stashOutput$stdout = stashOutput.stdout) === null || _stashOutput$stdout === void 0 ? void 0 : _stashOutput$stdout.trim())) {
+    Shell$1.exec('git stash pop');
+  }
 
   console.log(Chalk.green(D.HINT_ALLEND));
 };
@@ -344,6 +365,20 @@ const CONFIRM_QUESTIONS = [{
   message: D.ANSWER_CONF,
   default: 'Y'
 }];
+
+const validateAnswers = (currentBranch, config) => {
+  const errors = [];
+  config.forEach(conf => {
+    if (conf.optional && (!currentBranch[conf.name] || currentBranch[conf.name] === 'no')) return;
+    if (new RegExp(conf.regExp).test(conf.prefix + String(currentBranch[conf.name]))) return;
+    errors.push({
+      name: conf.name,
+      value: String(currentBranch[conf.name]),
+      regexp: conf.regExp
+    });
+  });
+  return errors;
+};
 
 const getQuestions = (currentBranch, config) => {
   const currentQuestions = config.slice();
@@ -423,6 +458,15 @@ const askQuestions = async (config, currentBranch) => {
         answers[answerKey] = '';
       }
     });
+    /** perform validation */
+
+    const errors = validateAnswers(answers, config);
+
+    if (errors.length) {
+      errors.forEach(err => console.log(Chalk$1.red(D.ANSWER_FAIL.replace('__OPTION__', err.name).replace('__REQ_REG__', err.regexp).replace('__VALUE__', err.value))));
+      continue;
+    }
+
     console.log();
     logAnswers(answers);
     const userConfirm = await inquirer$1.prompt(CONFIRM_QUESTIONS);
@@ -626,6 +670,86 @@ const updateNotice = async (packagePath, rcPath, message) => {
   }
 };
 
+const Shell$3 = require('shelljs');
+
+const getCurrentBranchLists = () => {
+  const branchs = Shell$3.exec('git branch', {
+    silent: true
+  });
+  return branchs.stdout.trim();
+};
+
+const prepareBranchLists = () => {
+  const branchs = getCurrentBranchLists().split('\n').map(branch => branch.trim()).filter(branchItem => !branchItem.startsWith('*'));
+  return branchs;
+};
+/** 判断是否成功加入 stash */
+
+
+const hasStashedSuccessfully$1 = stashOutput => {
+  if (stashOutput.indexOf(STASHERROR_EN) !== -1 || stashOutput.indexOf(STASHERROR_ZH) !== -1) {
+    return false;
+  }
+
+  return true;
+};
+
+const performCheckout = branchName => {
+  var _stashResult$stdout;
+
+  const stashResult = Shell$3.exec('git stash --include-untracked', {
+    silent: true
+  });
+  Shell$3.exec(`git checkout ${branchName}`, {
+    silent: true
+  });
+
+  if (hasStashedSuccessfully$1(stashResult === null || stashResult === void 0 ? void 0 : (_stashResult$stdout = stashResult.stdout) === null || _stashResult$stdout === void 0 ? void 0 : _stashResult$stdout.trim())) {
+    Shell$3.exec('git stash pop', {
+      silent: true
+    });
+  }
+};
+
+const Inquirer = require('inquirer');
+
+Inquirer.registerPrompt('search-list', require('inquirer-search-list'));
+
+const prepareQuestions = () => {
+  const availableBranchs = prepareBranchLists();
+  return [{
+    type: "search-list",
+    message: D.SWITCH_TTLE,
+    name: "branch",
+    choices: availableBranchs,
+    default: availableBranchs[0]
+  }];
+};
+
+const getCheckoutBranch = async () => {
+  const question = prepareQuestions();
+  const result = await Inquirer.prompt(question);
+  return result.branch;
+};
+
+const Chalk$3 = require('chalk');
+
+const switchBranch = async () => {
+  console.log(Chalk$3.green(D.SWITCH_INTR));
+  console.log(Chalk$3.green(D.SWITCH_SETR));
+  console.log();
+  const checkoutBranch = await getCheckoutBranch();
+
+  if (checkoutBranch) {
+    performCheckout(checkoutBranch);
+    console.log(Chalk$3.green(D.SWITCH_SUCC));
+    return true;
+  }
+
+  console.log(Chalk$3.red(D.SWITCH_FAIL));
+  return false;
+};
+
 const rcfile = require('rcfile');
 
 const path = require('path');
@@ -636,6 +760,12 @@ const fs$1 = require('fs');
 
 const pkgJsonPath = path.join('..', 'package.json');
 const updateRcPath = path.join(os.homedir(), '.bfrc');
+/**
+ * BranchFormat API
+ * @export
+ * @param {string} directoryPath yourCurrentWorkingDirectory
+ * @returns {Promise<boolean>} BranchFormat result
+ */
 
 async function performFormat(directoryPath) {
   var _rcConfig$config;
@@ -665,6 +795,13 @@ async function performFormat(directoryPath) {
   await modifyBranch(result, configs, currentBranch, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
   return true;
 }
+/**
+ * BranchVerification API
+ * @export
+ * @param {string} directoryPath yourWorkingDirectory
+ * @returns {Promise<boolean>} Branch Validation Result
+ */
+
 
 async function isCurrentBranchValid(directoryPath) {
   var _rcConfig$config2;
@@ -683,7 +820,13 @@ async function isCurrentBranchValid(directoryPath) {
   /** get current branch */
 
   const currentBranch = getCurrentBranch();
+  /** avoid detached HEAD state verifications */
+
+  if (!currentBranch) {
+    return true;
+  }
   /** Skip with skippable branches */
+
 
   if (!isBranchShouldParse(currentBranch, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip)) {
     return true;
@@ -697,5 +840,46 @@ async function isCurrentBranchValid(directoryPath) {
     return Boolean(config.optional || branchModel[config.name]);
   });
 }
+/**
+ * BranchSwitching API
+ * @export
+ * @returns {Promise<void>}
+ */
 
-export { isCurrentBranchValid, performFormat };
+
+async function switchBranch$1() {
+  await updateNotice(pkgJsonPath, updateRcPath);
+  const result = await switchBranch();
+  return result;
+}
+/**
+ * Extract params from a given branch
+ * Followed the regulations defined
+ * by users' branchFormat.config.js
+ * @export
+ * @param {string} directoryPath currentWorkingDirectory
+ * @param {string} [targetBranch] targetBranch, defaultly current branch
+ * @returns {Promise<BranchAnswers | null>} current branch parsing result
+ */
+
+
+async function extractBranchParams(directoryPath, targetBranch) {
+  var _rcConfig$config3;
+
+  await updateNotice(pkgJsonPath, updateRcPath);
+  /** rcPath */
+
+  const rcConfig = rcfile('branchformat', {
+    cwd: directoryPath,
+    configFileName: 'branchformat.config.js',
+    defaultExtension: '.js'
+  });
+  /** get configs */
+
+  const configs = getCurrentConfig((_rcConfig$config3 = rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.config) !== null && _rcConfig$config3 !== void 0 ? _rcConfig$config3 : []);
+  const testBranch = targetBranch !== null && targetBranch !== void 0 ? targetBranch : getCurrentBranch();
+  if (!testBranch || !isBranchShouldParse(testBranch, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip)) return null;
+  return parseExistedBranch(testBranch, configs, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
+}
+
+export { extractBranchParams, isCurrentBranchValid, performFormat, switchBranch$1 as switchBranch };

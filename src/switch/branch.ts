@@ -1,3 +1,5 @@
+import { STASHERROR_EN, STASHERROR_ZH } from "src/lib/dict"
+
 const Shell = require('shelljs')
 
 export const getCurrentBranchLists = () => {
@@ -12,8 +14,21 @@ export const prepareBranchLists = () => {
     return branchs
 }
 
+/** 判断是否成功加入 stash */
+const hasStashedSuccessfully = (stashOutput: string) => {
+    if (
+        stashOutput.indexOf(STASHERROR_EN) !== -1 ||
+        stashOutput.indexOf(STASHERROR_ZH) !== -1
+    ) {
+        return false
+    }
+    return true
+}
+
 export const performCheckout = (branchName: string) => {
-    Shell.exec('git stash', { silent: true })
+    const stashResult = Shell.exec('git stash --include-untracked', { silent: true })
     Shell.exec(`git checkout ${branchName}`, { silent: true })
-    Shell.exec('git stash pop', { silent: true })
+    if (hasStashedSuccessfully(stashResult?.stdout?.trim())) {
+        Shell.exec('git stash pop', { silent: true })
+    }
 }

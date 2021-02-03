@@ -4,6 +4,7 @@ import replace from '@rollup/plugin-replace'
 import pkg from './package.json'
 import typescript from '@rollup/plugin-typescript'
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import dts from 'rollup-plugin-dts'
 
 const plugins = [
   replace({
@@ -40,5 +41,14 @@ const core = {
   plugins,
 }
 
+const definitions = {
+  input: './src/index.ts',
+  output: {
+    file: 'index.d.ts',
+    format: 'es',
+  },
+  plugins: [dts()],
+}
 
-export default [core]
+
+export default [core, definitions]

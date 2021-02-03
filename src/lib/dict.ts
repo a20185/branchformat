@@ -13,6 +13,7 @@ const ZH_DICT = {
     CONFIG_REID: '请输入关联ID（例如 ones-xxx, km-xxx, tt-xxx）：',
     ANSWER_CONF: '确认吗（Y/n）?',
     ANSWER_LIST: '您当前填写的信息如下：',
+    ANSWER_FAIL: '❌ 分支选项 __OPTION__ 不符合要求格式 __REQ_REG__，验证失败。(当前填写为 __VALUE__ )',
     ANSWER_RMBR: '是否要删除原分支（Y/n）？',
     HINT_NODESC: '缺少分支类型和分支描述，请重新检查！',
     HINT_MUSTOP: '必填选项 __MUST_OP__ 未填写，请重新检查！',
@@ -45,6 +46,7 @@ const EN_DICT = {
     CONFIG_REID: 'Input reference ID (E.g. ones-xxx, km-xxx, tt-xxx) :',
     ANSWER_CONF: 'Proceed (Y/n) ?',
     ANSWER_LIST: 'Collected branch informations: ',
+    ANSWER_FAIL: '❌ Inputed option `__OPTION__` fails to match required format __REQ_REG__ (Your current value `__VALUE__` )',
     ANSWER_RMBR: 'Delete origin checkouted branch (Y/n) ?',
     HINT_NODESC: 'Missing BranchType and BranchDescription, program exited.',
     HINT_MUSTOP: 'Required item __MUST_OP__ is missing.',
@@ -66,3 +68,6 @@ const EN_DICT = {
 
 
 export const D = lang === 'zh' ? ZH_DICT : EN_DICT
+
+export const STASHERROR_ZH = '没有要保存的本地修改'
+export const STASHERROR_EN = 'No local changes to save'

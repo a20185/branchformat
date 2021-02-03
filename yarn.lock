@@ -1901,6 +1901,15 @@ restore-cursor@^3.1.0:
     onetime "^5.1.0"
     signal-exit "^3.0.2"
 
+rollup-plugin-dts@^2.0.1:
+  version "2.0.1"
+  resolved "http://r.npm.sankuai.com/rollup-plugin-dts/download/rollup-plugin-dts-2.0.1.tgz#333f50a637e199a073d490b198746f3c6bd07701"
+  integrity sha1-Mz9QpjfhmaBz1JCxmHRvPGvQdwE=
+  dependencies:
+    magic-string "^0.25.7"
+  optionalDependencies:
+    "@babel/code-frame" "^7.10.4"
+
 rollup@^2.23.0:
   version "2.34.0"
   resolved "https://registry.npm.taobao.org/rollup/download/rollup-2.34.0.tgz?cache=0&sync_timestamp=1606629581304&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Frollup%2Fdownload%2Frollup-2.34.0.tgz#ecc7f1d4ce2cb88bb51bec2f56b984f3c35b8271"

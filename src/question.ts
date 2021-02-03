@@ -21,6 +21,16 @@ const CONFIRM_QUESTIONS = [
     }
 ]
 
+const validateAnswers = (currentBranch: Partial<BranchAnswers>, config: readonly OptionItem[]) => {
+    const errors: { name: string; value: string; regexp: string }[] = []
+    config.forEach(conf => {
+        if (conf.optional && (!currentBranch[conf.name] || currentBranch[conf.name] === 'no')) return
+        if (new RegExp(conf.regExp).test(conf.prefix + String(currentBranch[conf.name]))) return
+        errors.push({ name: conf.name, value: String(currentBranch[conf.name]), regexp: conf.regExp })
+    })
+    return errors
+}
+
 const getQuestions = (currentBranch: BranchAnswers, config: readonly OptionItem[]) => {
     const currentQuestions = config.slice()
     return {
@@ -78,6 +88,18 @@ export const askQuestions = async (config: readonly OptionItem[], currentBranch:
                 answers[answerKey] = ''
             }
         })
+        /** perform validation */
+        const errors = validateAnswers(answers, config)
+        if (errors.length) {
+            errors.forEach(err => console.log(
+                Chalk.red(
+                    D.ANSWER_FAIL.replace('__OPTION__', err.name)
+                        .replace('__REQ_REG__', err.regexp)
+                        .replace('__VALUE__', err.value)
+                )
+            ))
+            continue
+        }
         console.log()
         logAnswers(answers)
         const userConfirm = await inquirer.prompt(CONFIRM_QUESTIONS)

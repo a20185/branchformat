@@ -1,6 +1,6 @@
 import { isBranchShouldParse } from './branch'
 import { OptionItem } from './config'
-import { D } from './lib/dict'
+import { D, STASHERROR_EN, STASHERROR_ZH } from './lib/dict'
 import { BranchAnswers } from "./question"
 const inquirer = require('inquirer')
 const Chalk = require('chalk')
@@ -14,6 +14,17 @@ const BRANCH_REMOVE_QUESTIONS = [
         default: 'n'
     }
 ]
+
+/** 判断是否成功加入 stash */
+const hasStashedSuccessfully = (stashOutput: string) => {
+    if (
+        stashOutput.indexOf(STASHERROR_EN) !== -1 ||
+        stashOutput.indexOf(STASHERROR_ZH) !== -1
+    ) {
+        return false
+    }
+    return true
+}
 
 export const modifyBranch = async (branchConfig: Partial<BranchAnswers>, config: readonly OptionItem[], sourceBranch: string, skipBranch: string[]) => {
     if (!branchConfig.type || !branchConfig.desc) {
@@ -46,8 +57,8 @@ export const modifyBranch = async (branchConfig: Partial<BranchAnswers>, config:
     console.log()
     console.log(Chalk.green(D.HINT_PRECKO.replace('__TGT_BR__', targetBranch)))
     console.log(Chalk.white(D.HINT_STSING))
-    /** Stash changes */
-    Shell.exec('git stash')
+    /** Stash changes - including untracked files */
+    const stashOutput = Shell.exec('git stash --include-untracked')
     console.log(Chalk.white(D.HINT_CHKING))
     Shell.exec(`git checkout -b ${targetBranch} -f`)
     console.log(Chalk.green(D.HINT_CHKEND))
@@ -61,6 +72,10 @@ export const modifyBranch = async (branchConfig: Partial<BranchAnswers>, config:
             Shell.exec(`git push origin :${sourceBranch}`)
 
         }
+    }
+    /** Perform Stash pop if stashed successfully */
+    if (hasStashedSuccessfully(stashOutput?.stdout?.trim())) {
+        Shell.exec('git stash pop')
     }
     console.log(Chalk.green(D.HINT_ALLEND))
 }
