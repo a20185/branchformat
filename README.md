@@ -84,6 +84,11 @@ module.exports = {
             options: ['feature', 'bugfix', 'hotfix'],
             /** regular expressions used for parsing current option */
             regExp: '(feature|bugfix|hotfix)'
+            /** support 'When' function to provide conditional shows of your customize options */
+            when: (answers) => {
+              if (answers.swimlane) return false
+              return true
+            }
         }
     ],
     /**

@@ -39,7 +39,11 @@ module.exports = {
             default: '',
             message: 'Input businessKey: ',
             prefix: '#',
-            regExp: '#([0-9a-zA-Z_]+)'
+            regExp: '#([0-9a-zA-Z_]+)',
+            when: (answers) => {
+                if (answers.packageName === 'order') return true
+                return false
+            }
         },
         {
             name: 'id',

@@ -7,7 +7,7 @@ const fs = require('fs')
 const defaultNpmMirror = 'http://registry.npmjs.org/'
 const defaultYarnMirror = 'https://registry.yarnpkg.com/'
 const sankuaiMirror = 'http://r.npm.sankuai.com/'
-let npmMirror = sankuaiMirror
+let npmMirror = defaultNpmMirror
 const DEFAULT_VALIDATE_REMAINS = 20
 
 interface BranchFormatRcType {
@@ -54,7 +54,7 @@ const getNpmMirror = () => {
         const mirrorResult = Shell.exec('npm config get registry', { silent: true })
         npmMirror = mirrorResult.stdout.trim()
     } catch (err) {
-        npmMirror = sankuaiMirror
+        npmMirror = defaultNpmMirror
     }
 }
 
@@ -65,7 +65,7 @@ const getProperNpmListPath = (packageName: string): string => {
     if (hasNpmMirror) {
         return `${npmMirror}${packageName}`
     }
-    return `${sankuaiMirror}${packageName}`
+    return `${defaultNpmMirror}${packageName}`
 }
 
 const getLocalMessage = (packageName: string, latestVersion: string, originMessage?: string): string => {
@@ -134,7 +134,7 @@ export const updateNotice = async (packagePath: string, rcPath: string, message?
                 latest: latestVersion
             }
         }
-    } catch (err) {
+    } catch (err: any) {
         console.log(Chalk.red(err.message))
         return false
     }

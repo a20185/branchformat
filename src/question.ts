@@ -21,21 +21,25 @@ const CONFIRM_QUESTIONS = [
     }
 ]
 
-const validateAnswers = (currentBranch: Partial<BranchAnswers>, config: readonly OptionItem[]) => {
-    const errors: { name: string; value: string; regexp: string }[] = []
-    config.forEach(conf => {
-        if (conf.optional && (!currentBranch[conf.name] || currentBranch[conf.name] === 'no')) return
-        if (new RegExp(conf.regExp).test(conf.prefix + String(currentBranch[conf.name]))) return
-        errors.push({ name: conf.name, value: String(currentBranch[conf.name]), regexp: conf.regExp })
-    })
-    return errors
-}
-
 const getQuestions = (currentBranch: BranchAnswers, config: readonly OptionItem[]) => {
     const currentQuestions = config.slice()
     return {
         questions: currentQuestions.map(question => {
-            const { name, type, message, options, envDefault, default: df } = question as any
+            const { name, type, message, options, envDefault, default: df, when } = question as any
+            const validate = (input: string) => {
+                const inputEmpty = !input || input === 'no'
+                const validateResult = Boolean(
+                    (question.optional && inputEmpty) ||
+                    (!inputEmpty && new RegExp(question.regExp).test(question.prefix + input))
+                )
+                return Promise.resolve(
+                    validateResult
+                        ? validateResult
+                        : Chalk.red(D.ANSWER_FAIL.replace('__OPTION__', question.name)
+                            .replace('__REQ_REG__', question.regExp)
+                            .replace('__VALUE__', question.prefix + input))
+                )
+            }
             const defaults =
                 /** Top1: 从 env 处理得出的默认值来 */
                 envDefault
@@ -46,9 +50,9 @@ const getQuestions = (currentBranch: BranchAnswers, config: readonly OptionItem[
                         /** Top3: 从用户定义的默认值中来 */
                         : df
             if (options) {
-                return { choices: options, name, type, message, envDefault, default: defaults }
+                return { choices: options, name, type, message, envDefault, default: defaults, validate, when }
             }
-            return { name, type, message, default: defaults }
+            return { name, type, message, default: defaults, validate, when }
         }),
         defaults: currentQuestions.reduce((prev, curr) => {
             prev[curr.name] =
@@ -88,18 +92,6 @@ export const askQuestions = async (config: readonly OptionItem[], currentBranch:
                 answers[answerKey] = ''
             }
         })
-        /** perform validation */
-        const errors = validateAnswers(answers, config)
-        if (errors.length) {
-            errors.forEach(err => console.log(
-                Chalk.red(
-                    D.ANSWER_FAIL.replace('__OPTION__', err.name)
-                        .replace('__REQ_REG__', err.regexp)
-                        .replace('__VALUE__', err.value)
-                )
-            ))
-            continue
-        }
         console.log()
         logAnswers(answers)
         const userConfirm = await inquirer.prompt(CONFIRM_QUESTIONS)

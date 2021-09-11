@@ -13,7 +13,7 @@ const ZH_DICT = {
     CONFIG_REID: '请输入关联ID（例如 ones-xxx, km-xxx, tt-xxx）：',
     ANSWER_CONF: '确认吗（Y/n）?',
     ANSWER_LIST: '您当前填写的信息如下：',
-    ANSWER_FAIL: '❌ 分支选项 __OPTION__ 不符合要求格式 __REQ_REG__，验证失败。(当前填写为 __VALUE__ )',
+    ANSWER_FAIL: '❌ 分支选项 __OPTION__ 不符合要求格式 __REQ_REG__，验证失败。(当前填写为 __VALUE__)',
     ANSWER_RMBR: '是否要删除原分支（Y/n）？',
     HINT_NODESC: '缺少分支类型和分支描述，请重新检查！',
     HINT_MUSTOP: '必填选项 __MUST_OP__ 未填写，请重新检查！',
@@ -30,7 +30,15 @@ const ZH_DICT = {
     SWITCH_SETR: '请输入关键字搜索分支, 方向键选择分支，回车执行分支切出...',
     SWITCH_TTLE: '输入关键字：',
     SWITCH_SUCC: '🍻 分支切换成功！',
-    SWITCH_FAIL: '❌ 分支切换失败，请选择分支！'
+    SWITCH_FAIL: '❌ 分支切换失败，请选择分支！',
+    BRANCH_FAIL: '❌ __BRANCH_OPTION__ 校验失败！您填写的值 __PARSED__ 无法满足您配置的分支格式 __REQUIRED__',
+    BRRESU_SUCC: '分支校验结果：成功 ✅',
+    BRRESU_FAIL: '分支校验结果：失败 ❌',
+    BRRESU_REST: '详细错误情况：',
+    BRVALI_RESU: '未切出',
+    BRVALI_EXIT: '❌ 您填写的属性不满足项目指定的校验规则！请注意当前分支 __RESULT__！',
+    BRVALI_HITX: '验证失败！',
+    BRVALI_HINT: '❌ 自定义校验规则 __RESULT__!'
 }
 
 const EN_DICT = {
@@ -46,7 +54,7 @@ const EN_DICT = {
     CONFIG_REID: 'Input reference ID (E.g. ones-xxx, km-xxx, tt-xxx) :',
     ANSWER_CONF: 'Proceed (Y/n) ?',
     ANSWER_LIST: 'Collected branch informations: ',
-    ANSWER_FAIL: '❌ Inputed option `__OPTION__` fails to match required format __REQ_REG__ (Your current value `__VALUE__` )',
+    ANSWER_FAIL: '❌ Inputed option `__OPTION__` fails to match required format __REQ_REG__ (Your current value `__VALUE__`)',
     ANSWER_RMBR: 'Delete origin checkouted branch (Y/n) ?',
     HINT_NODESC: 'Missing BranchType and BranchDescription, program exited.',
     HINT_MUSTOP: 'Required item __MUST_OP__ is missing.',
@@ -63,7 +71,15 @@ const EN_DICT = {
     SWITCH_SETR: 'Input keyword for branch searching, arrow key for selection, enter to perform checkout...',
     SWITCH_TTLE: 'Branch keyword: ',
     SWITCH_SUCC: '🍻 Branch switched successfully！',
-    SWITCH_FAIL: '❌ Branch switch error, please make sure any branch has selected！'
+    SWITCH_FAIL: '❌ Branch switch error, please make sure any branch has selected！',
+    BRANCH_FAIL: '❌ __BRANCH_OPTION__ validate failed since parsed value __PARSED__ does not matched your config format __REQUIRED__',
+    BRRESU_SUCC: 'Branch verify result：PASSED ✅',
+    BRRESU_FAIL: 'Branch verify result：FAILED ❌',
+    BRRESU_REST: 'Errors in detail: ',
+    BRVALI_RESU: 'has NOT created',
+    BRVALI_EXIT: '❌ Customize verification failed! Please note that your branch __RESULT__!',
+    BRVALI_HITX: 'validate FAILED',
+    BRVALI_HINT: '❌ Customize verification function __RESULT__!'
 }
 
 

@@ -16,7 +16,7 @@ export const fetchData = <T = any>(url: string,type: 'http' | 'https' = 'http'):
             try {
               const parsedData = JSON.parse(rawData)
               resolve(parsedData)
-            } catch (e) {
+            } catch (e: any) {
               console.error(e.message)
               reject(e)
             }

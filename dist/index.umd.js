@@ -114,7 +114,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     CONFIG_REID: '请输入关联ID（例如 ones-xxx, km-xxx, tt-xxx）：',
     ANSWER_CONF: '确认吗（Y/n）?',
     ANSWER_LIST: '您当前填写的信息如下：',
-    ANSWER_FAIL: '❌ 分支选项 __OPTION__ 不符合要求格式 __REQ_REG__，验证失败。(当前填写为 __VALUE__ )',
+    ANSWER_FAIL: '❌ 分支选项 __OPTION__ 不符合要求格式 __REQ_REG__，验证失败。(当前填写为 __VALUE__)',
     ANSWER_RMBR: '是否要删除原分支（Y/n）？',
     HINT_NODESC: '缺少分支类型和分支描述，请重新检查！',
     HINT_MUSTOP: '必填选项 __MUST_OP__ 未填写，请重新检查！',
@@ -131,7 +131,15 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     SWITCH_SETR: '请输入关键字搜索分支, 方向键选择分支，回车执行分支切出...',
     SWITCH_TTLE: '输入关键字：',
     SWITCH_SUCC: '🍻 分支切换成功！',
-    SWITCH_FAIL: '❌ 分支切换失败，请选择分支！'
+    SWITCH_FAIL: '❌ 分支切换失败，请选择分支！',
+    BRANCH_FAIL: '❌ __BRANCH_OPTION__ 校验失败！您填写的值 __PARSED__ 无法满足您配置的分支格式 __REQUIRED__',
+    BRRESU_SUCC: '分支校验结果：成功 ✅',
+    BRRESU_FAIL: '分支校验结果：失败 ❌',
+    BRRESU_REST: '详细错误情况：',
+    BRVALI_RESU: '未切出',
+    BRVALI_EXIT: '❌ 您填写的属性不满足项目指定的校验规则！请注意当前分支 __RESULT__！',
+    BRVALI_HITX: '验证失败！',
+    BRVALI_HINT: '❌ 自定义校验规则 __RESULT__!'
   };
   const EN_DICT = {
     UPDATE_CLOG: 'Version update brought changes as below: ',
@@ -146,7 +154,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     CONFIG_REID: 'Input reference ID (E.g. ones-xxx, km-xxx, tt-xxx) :',
     ANSWER_CONF: 'Proceed (Y/n) ?',
     ANSWER_LIST: 'Collected branch informations: ',
-    ANSWER_FAIL: '❌ Inputed option `__OPTION__` fails to match required format __REQ_REG__ (Your current value `__VALUE__` )',
+    ANSWER_FAIL: '❌ Inputed option `__OPTION__` fails to match required format __REQ_REG__ (Your current value `__VALUE__`)',
     ANSWER_RMBR: 'Delete origin checkouted branch (Y/n) ?',
     HINT_NODESC: 'Missing BranchType and BranchDescription, program exited.',
     HINT_MUSTOP: 'Required item __MUST_OP__ is missing.',
@@ -163,7 +171,15 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     SWITCH_SETR: 'Input keyword for branch searching, arrow key for selection, enter to perform checkout...',
     SWITCH_TTLE: 'Branch keyword: ',
     SWITCH_SUCC: '🍻 Branch switched successfully！',
-    SWITCH_FAIL: '❌ Branch switch error, please make sure any branch has selected！'
+    SWITCH_FAIL: '❌ Branch switch error, please make sure any branch has selected！',
+    BRANCH_FAIL: '❌ __BRANCH_OPTION__ validate failed since parsed value __PARSED__ does not matched your config format __REQUIRED__',
+    BRRESU_SUCC: 'Branch verify result：PASSED ✅',
+    BRRESU_FAIL: 'Branch verify result：FAILED ❌',
+    BRRESU_REST: 'Errors in detail: ',
+    BRVALI_RESU: 'has NOT created',
+    BRVALI_EXIT: '❌ Customize verification failed! Please note that your branch __RESULT__!',
+    BRVALI_HITX: 'validate FAILED',
+    BRVALI_HINT: '❌ Customize verification function __RESULT__!'
   };
   const D = lang === 'zh' ? ZH_DICT : EN_DICT;
   const STASHERROR_ZH = '没有要保存的本地修改';
@@ -171,7 +187,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
   const unifyConfigs = item => {
     return item.map(config => {
-      var _config$options, _config$message, _config$default, _config$envDefault, _config$optional, _config$prefix, _config$regExp;
+      var _config$options, _config$message, _config$default, _config$envDefault, _config$optional, _config$prefix, _config$regExp, _config$when;
 
       const listDefaults = config.type === 'list' ? {
         type: 'list',
@@ -187,8 +203,14 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         envDefault: (_config$envDefault = config === null || config === void 0 ? void 0 : config.envDefault) !== null && _config$envDefault !== void 0 ? _config$envDefault : '',
         optional: (_config$optional = config === null || config === void 0 ? void 0 : config.optional) !== null && _config$optional !== void 0 ? _config$optional : true,
         prefix: (_config$prefix = config === null || config === void 0 ? void 0 : config.prefix) !== null && _config$prefix !== void 0 ? _config$prefix : '',
-        regExp: (_config$regExp = config === null || config === void 0 ? void 0 : config.regExp) !== null && _config$regExp !== void 0 ? _config$regExp : '(.*)'
+        regExp: (_config$regExp = config === null || config === void 0 ? void 0 : config.regExp) !== null && _config$regExp !== void 0 ? _config$regExp : '(.*)',
+        when: (_config$when = config === null || config === void 0 ? void 0 : config.when) !== null && _config$when !== void 0 ? _config$when : true
       }, inputDefaults), listDefaults);
+    }).map(originalConfig => {
+      const regExp = `${originalConfig.regExp.startsWith('^') ? '' : '^'}${originalConfig.regExp}${originalConfig.regExp.endsWith('$') ? '' : '$'}`;
+      return _objectSpread(_objectSpread({}, originalConfig), {}, {
+        regExp
+      });
     });
   };
 
@@ -253,13 +275,13 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         envDefault: '',
         default: '',
         prefix: '',
-        regExp: '.*$'
+        regExp: '^[0-9a-zA-Z-_\/\.]*$'
       }]);
     }
     /** TODO: Merge user configs, use .branchformatrc */
 
 
-    return BRANCH_CONFIG.slice().concat([{
+    return unifyConfigs(BRANCH_CONFIG.slice()).concat([{
       name: 'desc',
       type: 'input',
       optional: false,
@@ -267,7 +289,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       envDefault: '',
       default: '',
       prefix: '',
-      regExp: '.*$'
+      regExp: '^[0-9a-zA-Z-_\/\.]*$'
     }]);
   };
 
@@ -374,20 +396,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     default: 'Y'
   }];
 
-  const validateAnswers = (currentBranch, config) => {
-    const errors = [];
-    config.forEach(conf => {
-      if (conf.optional && (!currentBranch[conf.name] || currentBranch[conf.name] === 'no')) return;
-      if (new RegExp(conf.regExp).test(conf.prefix + String(currentBranch[conf.name]))) return;
-      errors.push({
-        name: conf.name,
-        value: String(currentBranch[conf.name]),
-        regexp: conf.regExp
-      });
-    });
-    return errors;
-  };
-
   const getQuestions = (currentBranch, config) => {
     const currentQuestions = config.slice();
     return {
@@ -398,8 +406,16 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           message,
           options,
           envDefault,
-          default: df
+          default: df,
+          when
         } = question;
+
+        const validate = input => {
+          const inputEmpty = !input || input === 'no';
+          const validateResult = Boolean(question.optional && inputEmpty || !inputEmpty && new RegExp(question.regExp).test(question.prefix + input));
+          return Promise.resolve(validateResult ? validateResult : Chalk$1.red(D.ANSWER_FAIL.replace('__OPTION__', question.name).replace('__REQ_REG__', question.regExp).replace('__VALUE__', question.prefix + input)));
+        };
+
         const defaults =
         /** Top1: 从 env 处理得出的默认值来 */
         envDefault ? envDefault
@@ -415,7 +431,9 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
             type,
             message,
             envDefault,
-            default: defaults
+            default: defaults,
+            validate,
+            when
           };
         }
 
@@ -423,7 +441,9 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           name,
           type,
           message,
-          default: defaults
+          default: defaults,
+          validate,
+          when
         };
       }),
       defaults: currentQuestions.reduce((prev, curr) => {
@@ -466,15 +486,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           answers[answerKey] = '';
         }
       });
-      /** perform validation */
-
-      const errors = validateAnswers(answers, config);
-
-      if (errors.length) {
-        errors.forEach(err => console.log(Chalk$1.red(D.ANSWER_FAIL.replace('__OPTION__', err.name).replace('__REQ_REG__', err.regexp).replace('__VALUE__', err.value))));
-        continue;
-      }
-
       console.log();
       logAnswers(answers);
       const userConfirm = await inquirer$1.prompt(CONFIRM_QUESTIONS);
@@ -530,8 +541,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
   const defaultNpmMirror = 'http://registry.npmjs.org/';
   const defaultYarnMirror = 'https://registry.yarnpkg.com/';
-  const sankuaiMirror = 'http://r.npm.sankuai.com/';
-  let npmMirror = sankuaiMirror;
+  let npmMirror = defaultNpmMirror;
   const DEFAULT_VALIDATE_REMAINS = 20;
 
   const isRcValid = rcFile => {
@@ -586,7 +596,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       });
       npmMirror = mirrorResult.stdout.trim();
     } catch (err) {
-      npmMirror = sankuaiMirror;
+      npmMirror = defaultNpmMirror;
     }
   };
 
@@ -597,7 +607,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       return `${npmMirror}${packageName}`;
     }
 
-    return `${sankuaiMirror}${packageName}`;
+    return `${defaultNpmMirror}${packageName}`;
   };
 
   const getLocalMessage = (packageName, latestVersion, originMessage) => {
@@ -643,9 +653,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
       const localVersion = pkg.version;
       getNpmMirror();
+      console.log('CurrentMirror: ', npmMirror);
       /** FetchData */
 
       const npmData = await fetchData(getProperNpmListPath(pkg.name));
+      console.log(npmData);
       const latestVersion = (_npmData$distTags = npmData['dist-tags']) === null || _npmData$distTags === void 0 ? void 0 : _npmData$distTags.latest;
       if (!latestVersion || latestVersion === localVersion) return false;
       /** Do nothing if user uses prerelease versions */
@@ -758,6 +770,45 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     return false;
   };
 
+  const chalk = require("chalk");
+
+  const inspectBranchEquivalance = (configTerm, branchModel) => {
+    const termInspectResult = Boolean(configTerm.optional || branchModel[configTerm.name] && new RegExp(configTerm.regExp).test(configTerm.prefix + branchModel[configTerm.name]));
+
+    if (!termInspectResult) {
+      return D.BRANCH_FAIL.replace('__BRANCH_OPTION__', chalk.green(chalk.bold(configTerm.name))).replace('__PARSED__', chalk.underline(chalk.bold(configTerm.prefix + branchModel[configTerm.name]))).replace('__REQUIRED__', chalk.red(chalk.bold(configTerm.regExp)));
+    }
+
+    return null;
+  };
+  /**
+   * 校验验证错误
+   * @export
+   * @param {BranchAnswers} branchAnswers
+   * @param {BranchformatConfigModel} branchConfig
+   * @returns
+   */
+
+
+  function checkVerificationErrors(branchAnswers, branchConfig) {
+    if (typeof (branchConfig === null || branchConfig === void 0 ? void 0 : branchConfig.verify) === 'function') {
+      try {
+        const verifyResult = branchConfig === null || branchConfig === void 0 ? void 0 : branchConfig.verify(branchAnswers);
+        if (verifyResult === true) return false;
+        if (verifyResult === false) return D.BRRESU_FAIL;
+        return D.BRRESU_FAIL + ': ' + verifyResult;
+      } catch (err) {
+        return `${D.BRRESU_FAIL}: 校验函数调用失败！
+                ${err.message}
+            `;
+      }
+    }
+
+    return false;
+  }
+
+  const chalk$1 = require('chalk');
+
   const rcfile = require('rcfile');
 
   const path = require('path');
@@ -769,19 +820,16 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   const pkgJsonPath = path.join('..', 'package.json');
   const updateRcPath = path.join(os.homedir(), '.bfrc');
   /**
-   * BranchFormat API
+   * 分支切换 API
    * @export
-   * @param {string} directoryPath yourCurrentWorkingDirectory
-   * @returns {Promise<boolean>} BranchFormat result
+   * @param {string} directoryPath 当前项目目录
+   * @returns {Promise<boolean>} 分支切换结果
    */
 
   async function performFormat(directoryPath) {
     var _rcConfig$config;
 
     await updateNotice(pkgJsonPath, updateRcPath);
-    /** subFolderName */
-
-    const defaultSubPackage = directoryPath.split('/').pop();
     /** rcPath */
 
     const rcConfig = rcfile('branchformat', {
@@ -798,16 +846,27 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     const branchModel = parseExistedBranch(currentBranch, configs, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
     /** prepare questions */
 
-    const result = await askQuestions(configs, branchModel); // /** write target branch */
+    const result = await askQuestions(configs, branchModel);
+    /** Perform user validation */
+
+    const validationError = checkVerificationErrors(result, rcConfig);
+
+    if (validationError) {
+      console.log(validationError);
+      console.log(D.BRVALI_EXIT.replace('__RESULT__', chalk$1.bold(chalk$1.cyan(chalk$1.underline(D.BRVALI_RESU)))));
+      return false;
+    }
+
+    console.log(D.BRRESU_SUCC); // /** write target branch */
 
     await modifyBranch(result, configs, currentBranch, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
     return true;
   }
   /**
-   * BranchVerification API
+   * 分支合法性校验 API
    * @export
-   * @param {string} directoryPath yourWorkingDirectory
-   * @returns {Promise<boolean>} Branch Validation Result
+   * @param {string} directoryPath 当前项目目录
+   * @returns {Promise<boolean>} 分支校验结果
    */
 
 
@@ -843,13 +902,41 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     const branchModel = parseExistedBranch(currentBranch, configs, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
     /** Loop through branchModel and check if currentValid */
 
-    return configs.every(config => {
-      /** if is optional, or is filled with value */
-      return Boolean(config.optional || branchModel[config.name]);
+    const errors = [];
+    const parsedResult = configs.every(config => {
+      /** if is optional, or is filled with value and match regex */
+      const termInspectResult = inspectBranchEquivalance(config, branchModel);
+
+      if (termInspectResult) {
+        errors.push(termInspectResult);
+      }
+
+      return !termInspectResult;
     });
+    console.log(parsedResult ? D.BRRESU_SUCC : D.BRRESU_FAIL);
+
+    if (!parsedResult) {
+      console.log('----------------------------------------------------------------');
+      console.log(D.BRRESU_REST);
+      errors.forEach(result => console.log(result));
+      return parsedResult;
+    }
+    /** Perform user validation */
+
+
+    const validationError = checkVerificationErrors(branchModel, rcConfig);
+
+    if (validationError) {
+      console.log(validationError);
+      console.log(D.BRVALI_HINT.replace('__RESULT__', chalk$1.bold(chalk$1.cyan(chalk$1.underline(D.BRVALI_HITX)))));
+      return false;
+    }
+
+    console.log(D.BRRESU_SUCC);
+    return parsedResult;
   }
   /**
-   * BranchSwitching API
+   * 分支快速切换 API
    * @export
    * @returns {Promise<void>}
    */
@@ -861,13 +948,12 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     return result;
   }
   /**
-   * Extract params from a given branch
-   * Followed the regulations defined
-   * by users' branchFormat.config.js
+   * 根据当前的 branchFormat 配置
+   * 从给定分支中提取参数
    * @export
-   * @param {string} directoryPath currentWorkingDirectory
-   * @param {string} [targetBranch] targetBranch, defaultly current branch
-   * @returns {Promise<BranchAnswers | null>} current branch parsing result
+   * @param {string} directoryPath 当前项目目录
+   * @param {string} [targetBranch] 目标分支，默认为当前分支
+   * @returns {Promise<BranchAnswers | null>} 当前分支解析结果，如果分支不存在或需跳过则为空
    */
 
 
@@ -889,9 +975,110 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     if (!testBranch || !isBranchShouldParse(testBranch, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip)) return null;
     return parseExistedBranch(testBranch, configs, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
   }
+  /**
+   * [同步 API]
+   * 根据当前的 branchFormat 配置
+   * 从给定分支中提取参数
+   * @export
+   * @param {string} directoryPath 当前项目目录
+   * @param {string} [targetBranch] 目标分支，默认为当前分支
+   * @returns {Promise<BranchAnswers | null>} 当前分支解析结果，如果分支不存在或需跳过则为空
+   */
+
+
+  function extractBranchParamsSync(directoryPath, targetBranch) {
+    var _rcConfig$config4;
+
+    /** rcPath */
+    const rcConfig = rcfile('branchformat', {
+      cwd: directoryPath,
+      configFileName: 'branchformat.config.js',
+      defaultExtension: '.js'
+    });
+    /** get configs */
+
+    const configs = getCurrentConfig((_rcConfig$config4 = rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.config) !== null && _rcConfig$config4 !== void 0 ? _rcConfig$config4 : []);
+    const testBranch = targetBranch !== null && targetBranch !== void 0 ? targetBranch : getCurrentBranch();
+    if (!testBranch || !isBranchShouldParse(testBranch, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip)) return null;
+    return parseExistedBranch(testBranch, configs, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
+  }
+  /**
+   * [同步 API]
+   * 分支合法性校验 API
+   * @export
+   * @param {string} directoryPath 当前项目目录
+   * @returns {Promise<boolean>} 分支校验结果
+   */
+
+
+  function isCurrentBranchValidSync(directoryPath) {
+    var _rcConfig$config5;
+
+    /** rcPath */
+    const rcConfig = rcfile('branchformat', {
+      cwd: directoryPath,
+      configFileName: 'branchformat.config.js',
+      defaultExtension: '.js'
+    });
+    /** get configs */
+
+    const configs = getCurrentConfig((_rcConfig$config5 = rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.config) !== null && _rcConfig$config5 !== void 0 ? _rcConfig$config5 : []);
+    /** get current branch */
+
+    const currentBranch = getCurrentBranch();
+    /** avoid detached HEAD state verifications */
+
+    if (!currentBranch) {
+      return true;
+    }
+    /** Skip with skippable branches */
+
+
+    if (!isBranchShouldParse(currentBranch, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip)) {
+      return true;
+    }
+
+    const branchModel = parseExistedBranch(currentBranch, configs, rcConfig === null || rcConfig === void 0 ? void 0 : rcConfig.skip);
+    /** Loop through branchModel and check if currentValid */
+
+    const errors = [];
+    const parsedResult = configs.every(config => {
+      /** if is optional, or is filled with value and match regex */
+      const termInspectResult = inspectBranchEquivalance(config, branchModel);
+
+      if (termInspectResult) {
+        errors.push(termInspectResult);
+      }
+
+      return !termInspectResult;
+    });
+    console.log(parsedResult ? D.BRRESU_SUCC : D.BRRESU_FAIL);
+
+    if (!parsedResult) {
+      console.log('----------------------------------------------------------------');
+      console.log(D.BRRESU_REST);
+      errors.forEach(result => console.log(result));
+      return parsedResult;
+    }
+    /** Perform user validation */
+
+
+    const validationError = checkVerificationErrors(branchModel, rcConfig);
+
+    if (validationError) {
+      console.log(validationError);
+      console.log(D.BRVALI_HINT.replace('__RESULT__', chalk$1.bold(chalk$1.cyan(chalk$1.underline(D.BRVALI_HITX)))));
+      return false;
+    }
+
+    console.log(D.BRRESU_SUCC);
+    return parsedResult;
+  }
 
   exports.extractBranchParams = extractBranchParams;
+  exports.extractBranchParamsSync = extractBranchParamsSync;
   exports.isCurrentBranchValid = isCurrentBranchValid;
+  exports.isCurrentBranchValidSync = isCurrentBranchValidSync;
   exports.performFormat = performFormat;
   exports.switchBranch = switchBranch$1;
   Object.defineProperty(exports, '__esModule', {

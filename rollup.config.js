@@ -42,6 +42,7 @@ const core = {
 }
 
 const definitions = {
+  // 生成 .d.ts 类型声明文件
   input: './src/index.ts',
   output: {
     file: 'index.d.ts',
@@ -49,6 +50,5 @@ const definitions = {
   },
   plugins: [dts()],
 }
-
 
 export default [core, definitions]

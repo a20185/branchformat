@@ -1,4 +1,5 @@
 import { D } from './lib/dict'
+import { BranchAnswers } from'./question'
 
 export interface BaseOption {
     name: string
@@ -8,6 +9,7 @@ export interface BaseOption {
     message: string
     prefix: string
     regExp: string
+    when?: boolean | ((answers: BranchAnswers) => boolean)
 }
 export interface InputOption extends BaseOption {
     type: 'input'
@@ -18,6 +20,19 @@ export interface ListOption extends BaseOption {
 }
 
 export type OptionItem = ListOption | InputOption
+
+export interface BranchformatConfigModel {
+    /** 当前 BranchFormat 的分支配置 */
+    config: OptionItem[]
+    /** 跳过的分支 */
+    skip?: string[]
+    /**
+     * 用户增量的检测方法：用于处理分支选项关系等
+     *  - 输入：用户填充的表单值
+     *  - 输出：验证成功（true）/ 验证失败（false）/ 错误信息（string）
+     */
+    verify?: (userAnswers: Record<string, any>) => boolean | string
+}
 
 const unifyConfigs = (item: OptionItem[]): OptionItem[] => {
     return item.map(config => {
@@ -37,9 +52,16 @@ const unifyConfigs = (item: OptionItem[]): OptionItem[] => {
             optional: config?.optional ?? true,
             prefix: config?.prefix ?? '',
             regExp: config?.regExp ?? '(.*)',
+            when: config?.when ?? true,
             ...inputDefaults,
             ...listDefaults
         } as any
+    }).map(originalConfig => {
+        const regExp = `${originalConfig.regExp.startsWith('^') ? '' : '^'}${originalConfig.regExp}${originalConfig.regExp.endsWith('$') ? '' : '$'}`
+        return {
+            ...originalConfig,
+            regExp
+        } as OptionItem
     })
 }
 
@@ -110,12 +132,12 @@ export const getCurrentConfig = (userConfig: OptionItem[]): readonly OptionItem[
                 envDefault: '',
                 default: '',
                 prefix: '',
-                regExp: '.*$'
+                regExp: '^[0-9a-zA-Z-_\/\.]*$'
             }
         ])
     }
     /** TODO: Merge user configs, use .branchformatrc */
-    return (BRANCH_CONFIG.slice() as OptionItem[]).concat([
+    return unifyConfigs(BRANCH_CONFIG.slice() as OptionItem[]).concat([
         {
             name: 'desc',
             type: 'input',
@@ -124,7 +146,7 @@ export const getCurrentConfig = (userConfig: OptionItem[]): readonly OptionItem[
             envDefault: '',
             default: '',
             prefix: '',
-            regExp: '.*$'
+            regExp: '^[0-9a-zA-Z-_\/\.]*$'
         }
     ])
 
