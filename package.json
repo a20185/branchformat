@@ -1,6 +1,6 @@
 {
   "name": "branchformat",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "author": "Souler Ou(ou@souler.cc)",
   "description": "⚙ A simple util to help quick checkout or switch branches that correspond to team regulations",
   "main": "dist/index.common.js",
@@ -73,7 +73,7 @@
     "typescript": "^4.0.2"
   },
   "config": {
-    "changelog": "支持 when 条件化输出、用户定义的校验函数等功能",
-    "enchangelog": "Support When for conditional options and user-defined verify method."
+    "changelog": "移除所有内部源引用，开源可用",
+    "enchangelog": "Remove all inner package requirements, ready for openSource."
   }
 }

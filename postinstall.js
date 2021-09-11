@@ -8,15 +8,15 @@ var switchFile = path.join(binDirectory, 'switch')
 var verifyFile = path.join(binDirectory, 'branchverify')
 var targetPackageJson = path.join(userDir, 'package.json')
 
-var checkoutTemplate = `const { performFormat } = require('@nibfe/branchformat')
+var checkoutTemplate = `const { performFormat } = require('branchformat')
 performFormat(process.cwd())
 `
 
-var switchTemplate = `const { switchBranch } = require('@nibfe/branchformat')
+var switchTemplate = `const { switchBranch } = require('branchformat')
 switchBranch()
 `
 
-var verifyTemplate = `const { isCurrentBranchValid } = require('@nibfe/branchformat')
+var verifyTemplate = `const { isCurrentBranchValid } = require('branchformat')
 isCurrentBranchValid(process.cwd()).then(result => {
     if (!result) {
         console.log('Your current branch is invalid.Use \`yarn checkout\` instead!')

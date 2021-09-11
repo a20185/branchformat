@@ -654,11 +654,9 @@ const updateNotice = async (packagePath, rcPath, message) => {
 
     const localVersion = pkg.version;
     getNpmMirror();
-    console.log('CurrentMirror: ', npmMirror);
     /** FetchData */
 
     const npmData = await fetchData(getProperNpmListPath(pkg.name));
-    console.log(npmData);
     const latestVersion = (_npmData$distTags = npmData['dist-tags']) === null || _npmData$distTags === void 0 ? void 0 : _npmData$distTags.latest;
     if (!latestVersion || latestVersion === localVersion) return false;
     /** Do nothing if user uses prerelease versions */
